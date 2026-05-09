@@ -33,6 +33,25 @@ body {
     overflow-x: hidden;
 }
 
+/* Custom Scrollbar - Chrome/Edge/Safari */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #475569;
+}
+
 /* Background elements for rich aesthetics */
 body::before {
     content: '';
@@ -154,6 +173,9 @@ a {
     flex: 1;
     padding: 32px 48px;
     overflow-y: auto;
+    /* Firefox scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: #334155 transparent;
 }
 
 .header {

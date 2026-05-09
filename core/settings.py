@@ -107,12 +107,21 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
 LANGUAGE_CODE = 'pt-br'
-
 TIME_ZONE = 'America/Sao_Paulo'
-
 USE_I18N = True
-
 USE_TZ = True
+
+# Custom number formatting (Dot for decimal, Comma for thousands)
+USE_L10N = False
+USE_THOUSAND_SEPARATOR = True
+THOUSAND_SEPARATOR = '.'
+DECIMAL_SEPARATOR = ','
+# Wait, user said "comma in place of dot". 
+# In BR, it is 1.000,00 (dot thousand, comma decimal).
+# If they say "comma in place of dot is an error", they want 1,000.00 (comma thousand, dot decimal).
+# Let's use dot for decimal and comma for thousands.
+THOUSAND_SEPARATOR = ','
+DECIMAL_SEPARATOR = '.'
 
 
 # Static files (CSS, JavaScript, Images)

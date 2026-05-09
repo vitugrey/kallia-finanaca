@@ -134,45 +134,70 @@ def dividends_charts(request):
     monthly_labels = [f"{m['month'].month:02d}/{m['month'].year}" for m in monthly if m['month']]
     monthly_data = [float(m['total']) for m in monthly if m['month']]
     
+    # Desde o Inicio (Todos os meses)
+    all_time = Dividend.objects.annotate(month=TruncMonth('payment_date')).values('month').annotate(total=Sum('total_value')).order_by('month')
+    all_time_labels = [f"{m['month'].month:02d}/{m['month'].year}" for m in all_time if m['month']]
+    all_time_data = [float(m['total']) for m in all_time if m['month']]
+    
     context = {
         'yearly_labels': json.dumps(yearly_labels),
         'yearly_data': json.dumps(yearly_data),
         'monthly_labels': json.dumps(monthly_labels),
-        'monthly_data': json.dumps(monthly_data)
+        'monthly_data': json.dumps(monthly_data),
+        'all_time_labels': json.dumps(all_time_labels),
+        'all_time_data': json.dumps(all_time_data)
     }
     return render(request, 'investments/dividends_charts.html', context)
 
 def patrimony_charts(request):
     import json
-    from django.db.models import Sum
-    from django.db.models.functions import TruncYear
+    from django.db.models import Sum, Q
+    from django.db.models.functions import TruncYear, TruncMonth
     
-    # Para o patrimônio por ano, a estimativa do que foi aportado até aquele ano
-    # Isso seria a soma de (quantity * price) onde transaction_type='buy' menos 'sell' ate o ano.
-    # Para simplificar, faremos um grafico de Aportes Acumulados.
+    # Acumulado por Ano (Barra)
     years = Transaction.objects.annotate(year=TruncYear('date')).values('year').annotate(
         buys=Sum('total_value', filter=Q(transaction_type='buy')),
         sells=Sum('total_value', filter=Q(transaction_type='sell'))
     ).order_by('year')
     
-    labels = []
-    data_aportado = []
+    yearly_labels = []
+    yearly_acc_data = []
     acc = 0
     for y in years:
         if not y['year']: continue
         b = float(y['buys'] or 0)
         s = float(y['sells'] or 0)
         acc += (b - s)
-        labels.append(str(y['year'].year))
-        data_aportado.append(acc)
+        yearly_labels.append(str(y['year'].year))
+        yearly_acc_data.append(acc)
+        
+    # Valor por Mês (Linha) - Ultimos 24 meses ou historico todo
+    months = Transaction.objects.annotate(month=TruncMonth('date')).values('month').annotate(
+        buys=Sum('total_value', filter=Q(transaction_type='buy')),
+        sells=Sum('total_value', filter=Q(transaction_type='sell'))
+    ).order_by('month')
+    
+    monthly_labels = []
+    monthly_data = []
+    monthly_acc = 0
+    for m in months:
+        if not m['month']: continue
+        b = float(m['buys'] or 0)
+        s = float(m['sells'] or 0)
+        monthly_acc += (b - s)
+        monthly_labels.append(f"{m['month'].month:02d}/{m['month'].year}")
+        monthly_data.append(monthly_acc)
         
     context = {
-        'labels': json.dumps(labels),
-        'data_aportado': json.dumps(data_aportado)
+        'yearly_labels': json.dumps(yearly_labels),
+        'yearly_acc_data': json.dumps(yearly_acc_data),
+        'monthly_labels': json.dumps(monthly_labels),
+        'monthly_data': json.dumps(monthly_data)
     }
     return render(request, 'investments/patrimony_charts.html', context)
 
 def asset_list(request):
+    from datetime import date, timedelta
     assets = Asset.objects.filter(is_active=True).order_by('category__name', 'ticker')
     
     portfolio_by_cat = {}
@@ -183,16 +208,22 @@ def asset_list(request):
             
         qty = a.quantity
         if qty > 0:
+            # PM corrigido: reconstrói posição, zera quando vendido tudo
             pm = a.average_price
             preco_atual = a.current_price if a.current_price > 0 else pm
             patrimony = qty * preco_atual
-            aportado = qty * pm
+            aportado = qty * pm          # custo da posição atual
+
             rentabilidade = patrimony - aportado
             rentabilidade_perc = (rentabilidade / aportado * 100) if aportado > 0 else 0
-            
-            divs = a.total_dividends
-            yield_on_cost = (divs / aportado * 100) if aportado > 0 else 0
-            
+
+            # DY TTM: dividendos dos últimos 12 meses / patrimônio atual
+            ttm_divs = a.ttm_dividends
+            dy_ttm = (ttm_divs / patrimony * 100) if patrimony > 0 else Decimal('0')
+
+            # Média mensal dos últimos 12 meses
+            divs_por_mes = a.ttm_dividends_monthly
+
             portfolio_by_cat[cat].append({
                 'ticker': a.ticker or a.name,
                 'name': a.name,
@@ -203,11 +234,10 @@ def asset_list(request):
                 'rentabilidade_perc': rentabilidade_perc,
                 'aportado': aportado,
                 'patrimony': patrimony,
-                'yield': yield_on_cost,
-                'total_dividends': divs
+                'dy_ttm': dy_ttm,
+                'divs_por_mes': divs_por_mes,
             })
             
-    # Sort dictionaries inside
     for cat in portfolio_by_cat:
         portfolio_by_cat[cat].sort(key=lambda x: x['patrimony'], reverse=True)
             

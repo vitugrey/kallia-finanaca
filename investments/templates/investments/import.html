@@ -4,6 +4,13 @@
 {% block page_title %}Importador B3{% endblock %}
 {% block page_subtitle %}Faça o upload do Relatório Consolidado Mensal da B3{% endblock %}
 
+{% block header_actions %}
+<a href="{% url 'investments:dashboard' %}" class="btn-primary" style="display: flex; align-items: center; gap: 8px; padding: 10px 20px; background: rgba(99, 102, 241, 0.15); color: var(--accent-primary); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 8px; font-weight: 500; font-size: 14px; transition: all 0.2s;">
+    <i class='bx bx-arrow-back' style="font-size: 18px;"></i>
+    Voltar
+</a>
+{% endblock %}
+
 {% block content %}
 <div class="dashboard-grid">
     <div class="panel panel-half">

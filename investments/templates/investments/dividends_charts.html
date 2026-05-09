@@ -11,23 +11,87 @@
 </a>
 {% endblock %}
 
+{% block extra_head %}
+<style>
+    .tabs-container {
+        border-bottom: 1px solid var(--panel-border);
+        margin-bottom: 24px;
+        display: flex;
+        gap: 24px;
+        overflow-x: auto;
+    }
+    
+    .tab-btn {
+        background: transparent;
+        border: none;
+        color: var(--text-secondary);
+        font-family: var(--font-heading);
+        font-size: 16px;
+        font-weight: 500;
+        padding: 12px 0;
+        cursor: pointer;
+        position: relative;
+        transition: color 0.3s;
+    }
+    
+    .tab-btn:hover {
+        color: var(--text-primary);
+    }
+    
+    .tab-btn.active {
+        color: var(--accent-primary);
+    }
+    
+    .tab-btn.active::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: var(--accent-primary);
+        border-radius: 2px 2px 0 0;
+    }
+    
+    .tab-content {
+        display: none;
+    }
+    
+    .tab-content.active {
+        display: block;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="dashboard-grid">
-    <div class="panel panel-wide">
-        <div class="panel-header">
-            <h3 class="panel-title">Dividendos por Ano (Crescimento Histórico)</h3>
+    <div class="panel panel-wide" style="grid-column: 1 / -1;">
+        <div class="panel-header" style="border-bottom: none; padding-bottom: 0;">
+            <h3 class="panel-title">Evolução dos Dividendos</h3>
         </div>
-        <div style="height: 350px; position: relative; width: 100%;">
-            <canvas id="yearlyChart"></canvas>
+        
+        <div class="tabs-container" style="padding: 0 24px;">
+            <button class="tab-btn active" onclick="openTab(event, 'tab-24m')">Últimos 24 Meses</button>
+            <button class="tab-btn" onclick="openTab(event, 'tab-year')">Anual</button>
+            <button class="tab-btn" onclick="openTab(event, 'tab-all')">Desde o Início</button>
         </div>
-    </div>
 
-    <div class="panel panel-wide">
-        <div class="panel-header">
-            <h3 class="panel-title">Dividendos por Mês (Últimos 24 Meses)</h3>
+        <div id="tab-24m" class="tab-content active" style="padding: 0 24px 24px 24px;">
+            <div style="height: 450px; position: relative; width: 100%;">
+                <canvas id="monthlyChart"></canvas>
+            </div>
         </div>
-        <div style="height: 350px; position: relative; width: 100%;">
-            <canvas id="monthlyChart"></canvas>
+        
+        <div id="tab-year" class="tab-content" style="padding: 0 24px 24px 24px;">
+            <div style="height: 450px; position: relative; width: 100%;">
+                <canvas id="yearlyChart"></canvas>
+            </div>
+        </div>
+        
+        <div id="tab-all" class="tab-content" style="padding: 0 24px 24px 24px;">
+            <div style="height: 450px; position: relative; width: 100%;">
+                <canvas id="allTimeChart"></canvas>
+            </div>
         </div>
     </div>
 </div>
@@ -36,12 +100,31 @@
 {% block extra_scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+    function openTab(evt, tabId) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tab-content");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+            tabcontent[i].classList.remove("active");
+        }
+        tablinks = document.getElementsByClassName("tab-btn");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].classList.remove("active");
+        }
+        document.getElementById(tabId).style.display = "block";
+        document.getElementById(tabId).classList.add("active");
+        evt.currentTarget.classList.add("active");
+    }
+
     document.addEventListener("DOMContentLoaded", function() {
         const yearlyLabels = {{ yearly_labels|safe }};
         const yearlyData = {{ yearly_data|safe }};
         
         const monthlyLabels = {{ monthly_labels|safe }};
         const monthlyData = {{ monthly_data|safe }};
+        
+        const allTimeLabels = {{ all_time_labels|safe }};
+        const allTimeData = {{ all_time_data|safe }};
 
         const commonOptions = {
             responsive: true,
@@ -60,7 +143,7 @@
                             let label = context.dataset.label || '';
                             if (label) { label += ': '; }
                             if (context.parsed.y !== null) {
-                                label += new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(context.parsed.y);
+                                label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'BRL' }).format(context.parsed.y).replace('R$', 'R$').replace(/\s/g, '');
                             }
                             return label;
                         }
@@ -74,7 +157,7 @@
                     ticks: {
                         color: '#9ca3af',
                         callback: function(value, index, values) {
-                            return 'R$ ' + value;
+                            return 'R$' + new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(value);
                         }
                     }
                 },
@@ -85,24 +168,7 @@
             }
         };
 
-        // Gráfico Anual
-        new Chart(document.getElementById('yearlyChart').getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: yearlyLabels,
-                datasets: [{
-                    label: 'Dividendos',
-                    data: yearlyData,
-                    backgroundColor: 'rgba(16, 185, 129, 0.6)',
-                    borderColor: '#10b981',
-                    borderWidth: 1,
-                    borderRadius: 4
-                }]
-            },
-            options: commonOptions
-        });
-
-        // Gráfico Mensal
+        // Gráfico Mensal (Últimos 24 meses)
         new Chart(document.getElementById('monthlyChart').getContext('2d'), {
             type: 'line',
             data: {
@@ -118,7 +184,61 @@
                     tension: 0.3
                 }]
             },
+            options: {
+                ...commonOptions,
+                scales: {
+                    ...commonOptions.scales,
+                    x: {
+                        ...commonOptions.scales.x,
+                        ticks: { color: '#9ca3af', maxRotation: 45, minRotation: 45 }
+                    }
+                }
+            }
+        });
+
+        // Gráfico Anual
+        new Chart(document.getElementById('yearlyChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: yearlyLabels,
+                datasets: [{
+                    label: 'Dividendos por Ano',
+                    data: yearlyData,
+                    backgroundColor: 'rgba(16, 185, 129, 0.6)',
+                    borderColor: '#10b981',
+                    borderWidth: 1,
+                    borderRadius: 4
+                }]
+            },
             options: commonOptions
+        });
+
+        // Gráfico Desde o Início
+        new Chart(document.getElementById('allTimeChart').getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: allTimeLabels,
+                datasets: [{
+                    label: 'Dividendos',
+                    data: allTimeData,
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    borderColor: '#10b981',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#10b981',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                ...commonOptions,
+                scales: {
+                    ...commonOptions.scales,
+                    x: {
+                        ...commonOptions.scales.x,
+                        ticks: { color: '#9ca3af', maxRotation: 45, minRotation: 45 }
+                    }
+                }
+            }
         });
     });
 </script>

@@ -86,13 +86,13 @@
                     <tr>
                         <th>Ativo</th>
                         <th>Qtd.</th>
-                        <th>Preço Médio</th>
+                        <th>Preço Médio <small style="opacity:.6;font-weight:400;">(posição atual)</small></th>
                         <th>Preço Atual (YF)</th>
                         <th>Total Aportado</th>
                         <th>Patrimônio Atual</th>
                         <th>Rentabilidade</th>
-                        <th>Yield on Cost</th>
-                        <th>Total Proventos</th>
+                        <th>DY (12m)</th>
+                        <th>Dividendos/mês <small style="opacity:.6;font-weight:400;">(média 12m)</small></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -108,16 +108,16 @@
                             </div>
                         </td>
                         <td>{{ item.quantity|floatformat:0 }}</td>
-                        <td>R$ {{ item.pm|floatformat:2|intcomma }}</td>
-                        <td style="color: var(--accent-primary); font-weight: 500;">R$ {{ item.current_price|floatformat:2|intcomma }}</td>
-                        <td>R$ {{ item.aportado|floatformat:2|intcomma }}</td>
-                        <td class="value-cell">R$ {{ item.patrimony|floatformat:2|intcomma }}</td>
+                        <td>R${{ item.pm|floatformat:2|intcomma }}</td>
+                        <td style="color: var(--accent-primary); font-weight: 500;">R${{ item.current_price|floatformat:2|intcomma }}</td>
+                        <td>R${{ item.aportado|floatformat:2|intcomma }}</td>
+                        <td class="value-cell">R${{ item.patrimony|floatformat:2|intcomma }}</td>
                         <td style="font-weight: 500; color: {% if item.rentabilidade >= 0 %}var(--success){% else %}var(--danger){% endif %}; white-space: nowrap;">
-                            R$ {{ item.rentabilidade|floatformat:2|intcomma }}<br>
+                            R${{ item.rentabilidade|floatformat:2|intcomma }}<br>
                             <span style="font-size: 11px;">({{ item.rentabilidade_perc|floatformat:2 }}%)</span>
                         </td>
-                        <td style="color: var(--warning); font-weight: 500;">{{ item.yield|floatformat:2 }}%</td>
-                        <td class="text-success value-cell">R$ {{ item.total_dividends|floatformat:2|intcomma }}</td>
+                        <td style="color: var(--warning); font-weight: 500;">{{ item.dy_ttm|floatformat:2 }}%</td>
+                        <td class="text-success value-cell">R${{ item.divs_por_mes|floatformat:2|intcomma }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

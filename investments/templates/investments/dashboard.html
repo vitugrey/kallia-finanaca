@@ -74,7 +74,7 @@
                                     label += ': ';
                                 }
                                 if (context.parsed !== null) {
-                                    label += new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(context.parsed);
+                                    label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'BRL' }).format(context.parsed).replace('R$', 'R$').replace(/\s/g, '');
                                 }
                                 return label;
                             }
@@ -97,9 +97,9 @@
             </div>
             <span>Total de Patrimônio (Atual)</span>
         </div>
-        <div class="kpi-value" style="color: var(--text-primary);">R$ {{ total_patrimony|floatformat:2|intcomma }}</div>
+        <div class="kpi-value" style="color: var(--text-primary);">R${{ total_patrimony|floatformat:2|intcomma }}</div>
         <div class="kpi-trend trend-up" style="background: transparent; color: var(--text-secondary); font-size: 13px; font-weight: 500; padding: 0;">
-            Aportado (Custo): R$ {{ total_invested|floatformat:2|intcomma }}
+            Aportado (Custo): R${{ total_invested|floatformat:2|intcomma }}
         </div>
     </a>
 
@@ -110,7 +110,7 @@
             </div>
             <span>Dividendos (Último Mês)</span>
         </div>
-        <div class="kpi-value" style="color: var(--text-primary);">R$ {{ last_month_divs|floatformat:2|intcomma }}</div>
+        <div class="kpi-value" style="color: var(--text-primary);">R${{ last_month_divs|floatformat:2|intcomma }}</div>
         <div class="kpi-trend trend-up">
             <i class='bx bx-line-chart'></i> Yield (Últimos 12m): {{ dividend_yield_ttm|floatformat:2 }}%
         </div>
@@ -124,7 +124,7 @@
             <span>Rentabilidade</span>
         </div>
         <div class="kpi-value" style="color: {% if total_rentabilidade >= 0 %}var(--success){% else %}var(--danger){% endif %};">
-            R$ {{ total_rentabilidade|floatformat:2|intcomma }}
+            R${{ total_rentabilidade|floatformat:2|intcomma }}
         </div>
         <div class="kpi-trend {% if total_rentabilidade >= 0 %}trend-up{% else %}trend-down{% endif %}">
             <i class='bx {% if total_rentabilidade >= 0 %}bx-up-arrow-alt{% else %}bx-down-arrow-alt{% endif %}'></i> {{ total_rentabilidade_perc|floatformat:2 }}%
@@ -172,10 +172,10 @@
                             </div>
                         </td>
                         <td style="text-align: right; font-weight: 500; color: var(--text-primary); white-space: nowrap;">
-                            R$ {{ item.patrimony|floatformat:2|intcomma }}
+                            R${{ item.patrimony|floatformat:2|intcomma }}
                         </td>
                         <td style="text-align: right; font-weight: 500; color: {% if item.rentabilidade >= 0 %}var(--success){% else %}var(--danger){% endif %}; white-space: nowrap;">
-                            R$ {{ item.rentabilidade|floatformat:2|intcomma }}<br>
+                            R${{ item.rentabilidade|floatformat:2|intcomma }}<br>
                             <span style="font-size: 11px;">({{ item.rentabilidade_perc|floatformat:2 }}%)</span>
                         </td>
                     </tr>

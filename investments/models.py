@@ -83,18 +83,33 @@ class Asset(models.Model):
 
     @property
     def average_price(self):
-        """Preço médio de aquisição (total comprado / quantidade comprada)."""
-        buys = self.transactions.filter(
-            transaction_type=Transaction.TransactionType.BUY
-        ).aggregate(
-            total_qty=Sum("quantity"),
-            total_value=Sum("total_value"),
-        )
-        total_qty = buys["total_qty"] or Decimal("0")
-        total_value = buys["total_value"] or Decimal("0")
-        if total_qty > 0:
-            return (total_value / total_qty).quantize(Decimal("0.01"))
-        return Decimal("0")
+        """
+        Preço médio da posição ATUAL.
+        Reconstrói a carteira transação a transação em ordem cronológica.
+        Quando a posição vai a zero (venda total), reseta o custo — 
+        qualquer compra posterior começa uma nova posição.
+        """
+        transactions = self.transactions.order_by('date', 'id')
+        position_qty = Decimal('0')
+        position_cost = Decimal('0')
+        for t in transactions:
+            if t.transaction_type == Transaction.TransactionType.BUY:
+                position_qty += t.quantity
+                position_cost += t.total_value
+            elif t.transaction_type == Transaction.TransactionType.SELL:
+                if position_qty > 0:
+                    # Reduz custo proporcionalmente à quantidade vendida
+                    cost_per_unit = position_cost / position_qty
+                    position_cost -= cost_per_unit * t.quantity
+                position_qty -= t.quantity
+                # Se zerou (ou ficou negativo por ajuste), reseta tudo
+                if position_qty <= 0:
+                    position_qty = Decimal('0')
+                    position_cost = Decimal('0')
+
+        if position_qty > 0:
+            return (position_cost / position_qty).quantize(Decimal('0.01'))
+        return Decimal('0')
 
     @property
     def total_invested(self):
@@ -109,8 +124,22 @@ class Asset(models.Model):
 
     @property
     def total_dividends(self):
-        """Total de proventos recebidos deste ativo."""
+        """Total de proventos recebidos deste ativo (histórico completo)."""
         return self.dividends.aggregate(total=Sum("total_value"))["total"] or Decimal("0")
+
+    @property
+    def ttm_dividends(self):
+        """Total de proventos recebidos nos últimos 12 meses."""
+        from datetime import date, timedelta
+        cutoff = date.today() - timedelta(days=365)
+        return self.dividends.filter(payment_date__gte=cutoff).aggregate(
+            total=Sum("total_value")
+        )["total"] or Decimal("0")
+
+    @property
+    def ttm_dividends_monthly(self):
+        """Média mensal de proventos dos últimos 12 meses."""
+        return (self.ttm_dividends / 12).quantize(Decimal("0.01"))
 
 
 class Transaction(models.Model):
