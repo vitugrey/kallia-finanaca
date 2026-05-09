@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Importar Relatório | Kallia{% endblock %}
+{% block page_title %}Importador B3{% endblock %}
+{% block page_subtitle %}Faça o upload do Relatório Consolidado Mensal da B3{% endblock %}
+
+{% block content %}
+<div class="dashboard-grid">
+    <div class="panel panel-half">
+        <div class="panel-header">
+            <h3 class="panel-title">Fazer Upload</h3>
+        </div>
+        
+        <form method="POST" enctype="multipart/form-data" class="upload-form" style="display: flex; flex-direction: column; gap: 20px;">
+            {% csrf_token %}
+            
+            <div class="file-drop-area" style="border: 2px dashed var(--panel-border); border-radius: 12px; padding: 40px; text-align: center; cursor: pointer; transition: all 0.3s ease;">
+                <i class='bx bxs-file-blank' style="font-size: 48px; color: var(--success); margin-bottom: 15px;"></i>
+                <h4 style="margin-bottom: 8px;">Arraste a planilha XLSX ou clique para selecionar</h4>
+                <p style="color: var(--text-secondary); font-size: 14px;">Apenas relatórios mensais da B3 em Excel (relatorio-consolidado-mensal-*.xlsx)</p>
+                <input type="file" name="xlsx_file" accept=".xlsx" required style="width: 100%; height: 100%; position: absolute; top: 0; left: 0; opacity: 0; cursor: pointer;">
+            </div>
+            
+            <button type="submit" class="btn-primary" style="padding: 12px 24px; background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: var(--font-base); font-size: 16px; transition: transform 0.2s;">
+                Processar Relatório
+            </button>
+        </form>
+    </div>
+    
+    <div class="panel panel-half">
+        <div class="panel-header">
+            <h3 class="panel-title">Como Funciona?</h3>
+        </div>
+        <div style="color: var(--text-secondary); line-height: 1.6;">
+            <p style="margin-bottom: 15px;">Nosso motor automatizado lê diretamente o extrato gerado pelo site do investidor da B3.</p>
+            
+            <h4 style="color: var(--text-primary); margin-bottom: 8px;"><i class='bx bx-check-circle text-success'></i> O que ele extrai:</h4>
+            <ul style="margin-left: 20px; margin-bottom: 15px;">
+                <li>Compras e Vendas de Ações, FIIs, ETFs e BDRs</li>
+                <li>Proventos (Dividendos, JCP, Rendimentos)</li>
+                <li>Preços médios exatos de execução</li>
+            </ul>
+            
+            <h4 style="color: var(--text-primary); margin-bottom: 8px;"><i class='bx bx-info-circle text-warning'></i> Atenção:</h4>
+            <p>Ativos de Renda Fixa (Tesouro Direto, CDB) não geram transações mensais automáticas. Eles são ajustados no final do ano pelo Relatório Anual.</p>
+        </div>
+    </div>
+</div>
+
+<style>
+.file-drop-area { position: relative; }
+.file-drop-area:hover { background: rgba(255,255,255,0.02); border-color: var(--accent-primary); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4); }
+</style>
+{% endblock %}

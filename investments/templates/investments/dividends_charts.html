@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block title %}Gráficos de Dividendos | Kallia{% endblock %}
+{% block page_title %}Meus Dividendos{% endblock %}
+{% block page_subtitle %}Histórico de recebimento de proventos{% endblock %}
+
+{% block header_actions %}
+<a href="{% url 'investments:dashboard' %}" class="btn-primary" style="display: flex; align-items: center; gap: 8px; padding: 10px 20px; background: rgba(99, 102, 241, 0.15); color: var(--accent-primary); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 8px; font-weight: 500; font-size: 14px; transition: all 0.2s;">
+    <i class='bx bx-arrow-back' style="font-size: 18px;"></i>
+    Voltar
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-grid">
+    <div class="panel panel-wide">
+        <div class="panel-header">
+            <h3 class="panel-title">Dividendos por Ano (Crescimento Histórico)</h3>
+        </div>
+        <div style="height: 350px; position: relative; width: 100%;">
+            <canvas id="yearlyChart"></canvas>
+        </div>
+    </div>
+
+    <div class="panel panel-wide">
+        <div class="panel-header">
+            <h3 class="panel-title">Dividendos por Mês (Últimos 24 Meses)</h3>
+        </div>
+        <div style="height: 350px; position: relative; width: 100%;">
+            <canvas id="monthlyChart"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const yearlyLabels = {{ yearly_labels|safe }};
+        const yearlyData = {{ yearly_data|safe }};
+        
+        const monthlyLabels = {{ monthly_labels|safe }};
+        const monthlyData = {{ monthly_data|safe }};
+
+        const commonOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#1f2937',
+                    titleColor: '#f3f4f6',
+                    bodyColor: '#d1d5db',
+                    borderColor: '#374151',
+                    borderWidth: 1,
+                    padding: 12,
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) { label += ': '; }
+                            if (context.parsed.y !== null) {
+                                label += new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(context.parsed.y);
+                            }
+                            return label;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                    ticks: {
+                        color: '#9ca3af',
+                        callback: function(value, index, values) {
+                            return 'R$ ' + value;
+                        }
+                    }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#9ca3af' }
+                }
+            }
+        };
+
+        // Gráfico Anual
+        new Chart(document.getElementById('yearlyChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: yearlyLabels,
+                datasets: [{
+                    label: 'Dividendos',
+                    data: yearlyData,
+                    backgroundColor: 'rgba(16, 185, 129, 0.6)',
+                    borderColor: '#10b981',
+                    borderWidth: 1,
+                    borderRadius: 4
+                }]
+            },
+            options: commonOptions
+        });
+
+        // Gráfico Mensal
+        new Chart(document.getElementById('monthlyChart').getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: monthlyLabels,
+                datasets: [{
+                    label: 'Dividendos',
+                    data: monthlyData,
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    borderColor: '#10b981',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#10b981',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: commonOptions
+        });
+    });
+</script>
+{% endblock %}

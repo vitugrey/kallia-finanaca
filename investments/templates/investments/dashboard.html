@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Investimentos | Kallia{% endblock %}
+{% block page_title %}Carteira de Investimentos{% endblock %}
+{% block page_subtitle %}Visão geral do seu portfólio na B3{% endblock %}
+
+{% block header_actions %}
+<a href="{% url 'investments:import_report' %}" class="btn-primary" style="display: flex; align-items: center; gap: 8px; padding: 10px 20px; background: rgba(99, 102, 241, 0.15); color: var(--accent-primary); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 8px; font-weight: 500; font-size: 14px; transition: all 0.2s;">
+    <i class='bx bx-cloud-upload' style="font-size: 18px;"></i>
+    Importar B3
+</a>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const ctx = document.getElementById('allocationChart').getContext('2d');
+        const labels = [{% for alloc in allocation %}'{{ alloc.name }}',{% endfor %}];
+        const data = [{% for alloc in allocation %}{{ alloc.value|stringformat:"f" }},{% endfor %}];
+        
+        const colorMap = {
+            'Fundo Imobiliário': '#3b82f6', // Azul
+            'Ação': '#f59e0b', // Laranja
+            'Renda Fixa': '#10b981', // Verde
+            'ETF': '#ef4444', // Vermelho
+            'BDR': '#8b5cf6', // Roxo
+            'Criptomoeda': '#ec4899', // Rosa
+            'Outro': '#9ca3af' // Cinza
+        };
+        
+        const bgColors = labels.map(label => colorMap[label] || '#9ca3af');
+        
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: bgColors,
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '75%',
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            color: '#9ca3af',
+                            font: {
+                                family: "'Inter', sans-serif",
+                                size: 12
+                            },
+                            usePointStyle: true,
+                            padding: 20
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: '#1f2937',
+                        titleColor: '#f3f4f6',
+                        bodyColor: '#d1d5db',
+                        borderColor: '#374151',
+                        borderWidth: 1,
+                        padding: 12,
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed !== null) {
+                                    label += new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(context.parsed);
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-grid">
+    <!-- Top 3 Cards -->
+    <a href="{% url 'investments:patrimony_charts' %}" class="panel kpi-card" style="text-decoration: none; display: block;">
+        <div class="kpi-header">
+            <div class="kpi-icon icon-blue">
+                <i class='bx bx-wallet-alt'></i>
+            </div>
+            <span>Total de Patrimônio (Atual)</span>
+        </div>
+        <div class="kpi-value" style="color: var(--text-primary);">R$ {{ total_patrimony|floatformat:2|intcomma }}</div>
+        <div class="kpi-trend trend-up" style="background: transparent; color: var(--text-secondary); font-size: 13px; font-weight: 500; padding: 0;">
+            Aportado (Custo): R$ {{ total_invested|floatformat:2|intcomma }}
+        </div>
+    </a>
+
+    <a href="{% url 'investments:dividends_charts' %}" class="panel kpi-card" style="text-decoration: none; display: block;">
+        <div class="kpi-header">
+            <div class="kpi-icon icon-green">
+                <i class='bx bx-dollar-circle'></i>
+            </div>
+            <span>Dividendos (Último Mês)</span>
+        </div>
+        <div class="kpi-value" style="color: var(--text-primary);">R$ {{ last_month_divs|floatformat:2|intcomma }}</div>
+        <div class="kpi-trend trend-up">
+            <i class='bx bx-line-chart'></i> Yield (Últimos 12m): {{ dividend_yield_ttm|floatformat:2 }}%
+        </div>
+    </a>
+
+    <div class="panel kpi-card">
+        <div class="kpi-header">
+            <div class="kpi-icon {% if total_rentabilidade >= 0 %}icon-purple{% else %}icon-red{% endif %}">
+                <i class='bx bx-trending-up'></i>
+            </div>
+            <span>Rentabilidade</span>
+        </div>
+        <div class="kpi-value" style="color: {% if total_rentabilidade >= 0 %}var(--success){% else %}var(--danger){% endif %};">
+            R$ {{ total_rentabilidade|floatformat:2|intcomma }}
+        </div>
+        <div class="kpi-trend {% if total_rentabilidade >= 0 %}trend-up{% else %}trend-down{% endif %}">
+            <i class='bx {% if total_rentabilidade >= 0 %}bx-up-arrow-alt{% else %}bx-down-arrow-alt{% endif %}'></i> {{ total_rentabilidade_perc|floatformat:2 }}%
+        </div>
+    </div>
+
+    <!-- Bottom 2 Panels -->
+    <!-- Grafico de Pizza -->
+    <div class="panel panel-half">
+        <div class="panel-header">
+            <h3 class="panel-title">Composição da Carteira</h3>
+        </div>
+        <div style="height: 300px; position: relative;">
+            <canvas id="allocationChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Lista de Ativos com Scroll -->
+    <div class="panel panel-half" style="display: flex; flex-direction: column;">
+        <div class="panel-header" style="flex-shrink: 0;">
+            <a href="{% url 'investments:asset_list' %}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px;" class="panel-title">
+                Ativos na Carteira
+                <i class='bx bx-link-external' style="color: var(--accent-primary); font-size: 16px;"></i>
+            </a>
+        </div>
+        <div class="table-container" style="flex-grow: 1; overflow-y: auto; max-height: 300px; padding-right: 5px;">
+            <table class="data-table">
+                <thead style="position: sticky; top: 0; background: var(--panel-bg); z-index: 1;">
+                    <tr>
+                        <th>Ativo</th>
+                        <th style="text-align: right;">Patrimônio</th>
+                        <th style="text-align: right;">Rentabilidade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in portfolio %}
+                    <tr>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div class="asset-icon" style="width: 32px; height: 32px; font-size: 12px;">{{ item.ticker|slice:":2" }}</div>
+                                <div style="display: flex; flex-direction: column;">
+                                    <span style="font-weight: 600; color: var(--text-primary);">{{ item.ticker }}</span>
+                                    <span style="font-size: 11px; color: var(--text-secondary);">{{ item.type }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="text-align: right; font-weight: 500; color: var(--text-primary); white-space: nowrap;">
+                            R$ {{ item.patrimony|floatformat:2|intcomma }}
+                        </td>
+                        <td style="text-align: right; font-weight: 500; color: {% if item.rentabilidade >= 0 %}var(--success){% else %}var(--danger){% endif %}; white-space: nowrap;">
+                            R$ {{ item.rentabilidade|floatformat:2|intcomma }}<br>
+                            <span style="font-size: 11px;">({{ item.rentabilidade_perc|floatformat:2 }}%)</span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" style="text-align: center; color: var(--text-secondary); padding: 20px;">
+                            Nenhum ativo na carteira no momento.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

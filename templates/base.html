@@ -1,0 +1,79 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Kallia Finanças{% endblock %}</title>
+    
+    <!-- Boxicons for icons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">K</div>
+            <div class="brand-name">Kallia</div>
+        </div>
+        
+        <ul class="nav-menu">
+            <a href="#" class="nav-item">
+                <i class='bx bx-home-alt'></i>
+                <span>Visão Geral</span>
+            </a>
+            <a href="{% url 'investments:dashboard' %}" class="nav-item {% if request.resolver_match.app_name == 'investments' %}active{% endif %}">
+                <i class='bx bx-line-chart'></i>
+                <span>Investimentos</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i class='bx bx-wallet'></i>
+                <span>Carteira</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i class='bx bx-target-lock'></i>
+                <span>Metas</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i class='bx bx-cog'></i>
+                <span>Configurações</span>
+            </a>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="header">
+            <div>
+                <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
+                <p class="page-subtitle">{% block page_subtitle %}Gerencie seu patrimônio e finanças{% endblock %}</p>
+            </div>
+            
+            <div class="header-actions" style="display: flex; gap: 12px; align-items: center;">
+                {% block header_actions %}{% endblock %}
+            </div>
+        </div>
+        
+        {% if messages %}
+            <div class="messages-container" style="margin-bottom: 24px;">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}" style="padding: 16px; border-radius: 12px; font-weight: 500; {% if message.tags == 'success' %}background: var(--success-bg); color: var(--success); border-left: 4px solid var(--success);{% else %}background: var(--danger-bg); color: var(--danger); border-left: 4px solid var(--danger);{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

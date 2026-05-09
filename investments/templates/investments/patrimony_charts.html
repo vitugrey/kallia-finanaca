@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}Gráfico de Patrimônio | Kallia{% endblock %}
+{% block page_title %}Evolução do Patrimônio{% endblock %}
+{% block page_subtitle %}Histórico de aportes acumulados na carteira{% endblock %}
+
+{% block header_actions %}
+<a href="{% url 'investments:dashboard' %}" class="btn-primary" style="display: flex; align-items: center; gap: 8px; padding: 10px 20px; background: rgba(99, 102, 241, 0.15); color: var(--accent-primary); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 8px; font-weight: 500; font-size: 14px; transition: all 0.2s;">
+    <i class='bx bx-arrow-back' style="font-size: 18px;"></i>
+    Voltar
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-grid">
+    <div class="panel panel-wide">
+        <div class="panel-header">
+            <h3 class="panel-title">Aportes Acumulados por Ano</h3>
+        </div>
+        <div style="height: 400px; position: relative; width: 100%;">
+            <canvas id="patrimonyChart"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const labels = {{ labels|safe }};
+        const dataAportado = {{ data_aportado|safe }};
+        
+        new Chart(document.getElementById('patrimonyChart').getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Total Aportado',
+                    data: dataAportado,
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    borderColor: '#6366f1',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#6366f1',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#1f2937',
+                        titleColor: '#f3f4f6',
+                        bodyColor: '#d1d5db',
+                        borderColor: '#374151',
+                        borderWidth: 1,
+                        padding: 12,
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) { label += ': '; }
+                                if (context.parsed.y !== null) {
+                                    label += new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(context.parsed.y);
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: {
+                            color: '#9ca3af',
+                            callback: function(value, index, values) {
+                                return 'R$ ' + new Intl.NumberFormat('pt-BR').format(value);
+                            }
+                        }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#9ca3af' }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}
