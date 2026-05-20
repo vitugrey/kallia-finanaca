@@ -1,6 +1,8 @@
+from datetime import date, timedelta
+from decimal import Decimal
+
 from django.db import models
 from django.db.models import Sum, Q
-from decimal import Decimal
 
 
 class Category(models.Model):
@@ -130,7 +132,6 @@ class Asset(models.Model):
     @property
     def ttm_dividends(self):
         """Total de proventos recebidos nos últimos 12 meses."""
-        from datetime import date, timedelta
         cutoff = date.today() - timedelta(days=365)
         return self.dividends.filter(payment_date__gte=cutoff).aggregate(
             total=Sum("total_value")
