@@ -24,7 +24,7 @@
         </div>
         
         <ul class="nav-menu">
-            <a href="#" class="nav-item">
+            <a href="{% url 'overview' %}" class="nav-item {% if request.resolver_match.url_name == 'overview' %}active{% endif %}">
                 <i class='bx bx-home-alt'></i>
                 <span>Visão Geral</span>
             </a>
@@ -32,7 +32,7 @@
                 <i class='bx bx-line-chart'></i>
                 <span>Investimentos</span>
             </a>
-            <a href="#" class="nav-item">
+            <a href="{% url 'budget:dashboard' %}" class="nav-item {% if request.resolver_match.app_name == 'budget' %}active{% endif %}">
                 <i class='bx bx-wallet'></i>
                 <span>Carteira</span>
             </a>

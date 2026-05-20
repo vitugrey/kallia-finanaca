@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Visão Geral | Kallia{% endblock %}
+{% block page_title %}Visão Geral{% endblock %}
+{% block page_subtitle %}Consolidação de todo o seu dinheiro{% endblock %}
+
+{% block content %}
+<div class="dashboard-grid">
+    <!-- Card KPI 1: Total Consolidado -->
+    <div class="panel kpi-card" style="grid-column: span 12; background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15)); border: 1px solid rgba(99, 102, 241, 0.3);">
+        <div class="kpi-header">
+            <div class="kpi-icon" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; width: 50px; height: 50px; font-size: 24px; border-radius: 12px;">
+                <i class='bx bx-coin-stack'></i>
+            </div>
+            <div style="display: flex; flex-direction: column;">
+                <span style="font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary);">Total Consolidado</span>
+                <span style="font-size: 11px; color: rgba(255,255,255,0.4);">Investimentos + Carteira</span>
+            </div>
+        </div>
+        <div class="kpi-value" style="font-size: 40px; margin-top: 10px;">R${{ total_consolidated|floatformat:2|intcomma }}</div>
+    </div>
+
+    <!-- Card KPI 2: Investimentos -->
+    <a href="{% url 'investments:dashboard' %}" class="panel kpi-card" style="grid-column: span 6; text-decoration: none; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+            <div class="kpi-header">
+                <div class="kpi-icon icon-blue">
+                    <i class='bx bx-line-chart'></i>
+                </div>
+                <span>Investimentos (B3)</span>
+            </div>
+            <div class="kpi-value" style="margin-top: 15px; color: var(--text-primary);">R${{ total_patrimony|floatformat:2|intcomma }}</div>
+        </div>
+        <div style="margin-top: 20px; display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: var(--accent-primary);">
+            <span>Ver detalhes do portfólio</span>
+            <i class='bx bx-chevron-right' style="font-size: 18px;"></i>
+        </div>
+    </a>
+
+    <!-- Card KPI 3: Carteira (Budget) -->
+    <a href="{% url 'budget:dashboard' %}" class="panel kpi-card" style="grid-column: span 6; text-decoration: none; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+            <div class="kpi-header">
+                <div class="kpi-icon icon-green">
+                    <i class='bx bx-wallet'></i>
+                </div>
+                <span>Carteira (Fluxo de Caixa)</span>
+            </div>
+            <div class="kpi-value" style="margin-top: 15px; color: var(--text-primary);">R${{ wallet_balance|floatformat:2|intcomma }}</div>
+        </div>
+        <div style="margin-top: 20px; display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: var(--success);">
+            <span>Ver detalhes de transações</span>
+            <i class='bx bx-chevron-right' style="font-size: 18px;"></i>
+        </div>
+    </a>
+</div>
+{% endblock %}
