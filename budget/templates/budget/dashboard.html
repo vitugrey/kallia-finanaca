@@ -445,7 +445,7 @@
             <button onclick="closeModal('transactionModal')" class="close-btn">&times;</button>
         </div>
         <form method="POST" action="{% url 'budget:create_transaction' %}">
-            {% csrf_csrf_token %}
+            {% csrf_token %}
             <input type="hidden" name="next" value="{{ request.path }}">
             
             <div class="form-group">
@@ -515,7 +515,7 @@
             <button onclick="closeModal('categoryModal')" class="close-btn">&times;</button>
         </div>
         <form method="POST" action="{% url 'budget:create_category' %}">
-            {% csrf_csrf_token %}
+            {% csrf_token %}
             <div class="form-group">
                 <label for="cat_name">Nome da Categoria *</label>
                 <input type="text" id="cat_name" name="name" class="form-control" placeholder="Ex: Lazer, Saúde, Aluguel..." required>

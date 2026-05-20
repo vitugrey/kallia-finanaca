@@ -385,7 +385,7 @@
             <button onclick="closeModal('transactionModal')" class="close-btn">&times;</button>
         </div>
         <form method="POST" action="{% url 'budget:create_transaction' %}">
-            {% csrf_csrf_token %}
+            {% csrf_token %}
             <input type="hidden" name="next" value="{{ request.get_full_path }}">
             
             <div class="form-group">
