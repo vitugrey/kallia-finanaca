@@ -357,7 +357,7 @@
         <button class="pagination-btn" {% if not page_obj.has_previous %}disabled{% endif %} onclick="window.location.href='?page=1{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_month %}&month={{ selected_month }}{% endif %}'">
             <i class='bx bx-chevrons-left'></i> Primeira
         </button>
-        <button class="pagination-btn" {% if not page_obj.has_previous %}disabled{% endif %} onclick="window.location.href='?page={{ page_obj.previous_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_month %}&month={{ selected_month }}{% endif %}'">
+        <button class="pagination-btn" {% if not page_obj.has_previous %}disabled{% endif %} onclick="window.location.href='?page={% if page_obj.has_previous %}{{ page_obj.previous_page_number }}{% else %}1{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_month %}&month={{ selected_month }}{% endif %}'">
             <i class='bx bx-chevron-left'></i> Anterior
         </button>
         
@@ -365,7 +365,7 @@
             Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
         </span>
 
-        <button class="pagination-btn" {% if not page_obj.has_next %}disabled{% endif %} onclick="window.location.href='?page={{ page_obj.next_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_month %}&month={{ selected_month }}{% endif %}'">
+        <button class="pagination-btn" {% if not page_obj.has_next %}disabled{% endif %} onclick="window.location.href='?page={% if page_obj.has_next %}{{ page_obj.next_page_number }}{% else %}{{ page_obj.paginator.num_pages }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_month %}&month={{ selected_month }}{% endif %}'">
             Próxima <i class='bx bx-chevron-right'></i>
         </button>
         <button class="pagination-btn" {% if not page_obj.has_next %}disabled{% endif %} onclick="window.location.href='?page={{ page_obj.paginator.num_pages }}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_month %}&month={{ selected_month }}{% endif %}'">
