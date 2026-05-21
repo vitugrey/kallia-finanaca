@@ -27,16 +27,63 @@
         document.getElementById(id).style.display = 'none';
     }
 
+    // Modal de Edição Dinâmico
+    function openEditModal(btn) {
+        const id = btn.getAttribute('data-id');
+        const description = btn.getAttribute('data-description');
+        const value = btn.getAttribute('data-value');
+        const date = btn.getAttribute('data-date');
+        const type = btn.getAttribute('data-type');
+        const categoryId = btn.getAttribute('data-category');
+        const isCredit = btn.getAttribute('data-credit') === 'True';
+        const isFixedExpense = btn.getAttribute('data-fixed-expense') === 'True';
+        const isFixedIncome = btn.getAttribute('data-fixed-income') === 'True';
+
+        // Preenche campos
+        document.getElementById('edit_description').value = description;
+        document.getElementById('edit_value').value = value.replace('.', ',');
+        document.getElementById('edit_date').value = date;
+        document.getElementById('edit_transaction_type').value = type;
+        document.getElementById('edit_category').value = categoryId;
+        document.getElementById('edit_is_credit').checked = isCredit;
+        document.getElementById('edit_is_fixed_expense').checked = isFixedExpense;
+        document.getElementById('edit_is_fixed_income').checked = isFixedIncome;
+
+        // Ajusta checkboxes visíveis
+        handleEditTypeChange();
+
+        // Configura action do form
+        const form = document.getElementById('editForm');
+        form.action = `/carteira/transacoes/${id}/editar/`;
+
+        openModal('editTransactionModal');
+    }
+
     window.onclick = function(event) {
         if (event.target.classList.contains('modal-overlay')) {
             event.target.style.display = 'none';
         }
     }
 
+    // Toggle de inputs nos modais
     function handleTypeChange() {
         const typeSelect = document.getElementById('transaction_type');
         const expenseFixedDiv = document.getElementById('fixed-expense-container');
         const incomeFixedDiv = document.getElementById('fixed-income-container');
+
+        if (typeSelect.value === 'expense') {
+            expenseFixedDiv.style.display = 'block';
+            incomeFixedDiv.style.display = 'none';
+        } else {
+            expenseFixedDiv.style.display = 'none';
+            incomeFixedDiv.style.display = 'block';
+        }
+    }
+
+    function handleEditTypeChange() {
+        const typeSelect = document.getElementById('edit_transaction_type');
+        const expenseFixedDiv = document.getElementById('edit-fixed-expense-container');
+        const incomeFixedDiv = document.getElementById('edit-fixed-income-container');
 
         if (typeSelect.value === 'expense') {
             expenseFixedDiv.style.display = 'block';
@@ -62,6 +109,7 @@
         align-items: center;
         justify-content: center;
         z-index: 1000;
+        animation: fadeIn 0.2s ease-out;
     }
 
     .modal-content {
@@ -86,6 +134,7 @@
     .modal-title {
         font-size: 20px;
         font-family: var(--font-heading);
+        color: var(--text-primary);
     }
 
     .close-btn {
@@ -94,6 +143,11 @@
         color: var(--text-secondary);
         font-size: 24px;
         cursor: pointer;
+        transition: color 0.2s;
+    }
+
+    .close-btn:hover {
+        color: var(--text-primary);
     }
 
     .form-group {
@@ -155,6 +209,7 @@
         padding: 12px 24px;
         font-weight: 600;
         cursor: pointer;
+        transition: background 0.2s;
     }
 
     .btn-submit:hover {
@@ -169,6 +224,7 @@
         padding: 12px 24px;
         font-weight: 600;
         cursor: pointer;
+        transition: all 0.2s;
     }
 
     .btn-cancel:hover {
@@ -244,6 +300,11 @@
         color: var(--text-secondary);
         font-size: 14px;
     }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
 </style>
 {% endblock %}
 
@@ -252,9 +313,9 @@
 <div class="filter-panel">
     <form method="GET" action="{% url 'budget:transaction_list' %}" class="filter-form">
         <!-- Busca -->
-        <div class="filter-group" style="grid-column: span 4;">
+        <div class="filter-group" style="grid-column: span 3;">
             <label for="q" style="display:block; margin-bottom:6px; font-size:12px; color:var(--text-secondary);">Buscar por Descrição</label>
-            <input type="text" id="q" name="q" class="form-control" placeholder="Mercado, Aluguel, Uber..." value="{{ search_query|default:'' }}">
+            <input type="text" id="q" name="q" class="form-control" placeholder="Mercado, Salário, Uber..." value="{{ search_query|default:'' }}">
         </div>
 
         <!-- Tipo -->
@@ -280,8 +341,33 @@
 
         <!-- Mês -->
         <div class="filter-group" style="grid-column: span 2;">
-            <label for="month" style="display:block; margin-bottom:6px; font-size:12px; color:var(--text-secondary);">Mês/Ano</label>
-            <input type="month" id="month" name="month" class="form-control" value="{{ selected_month|default:'' }}">
+            <label for="month" style="display:block; margin-bottom:6px; font-size:12px; color:var(--text-secondary);">Mês</label>
+            <select id="month" name="month" class="form-control">
+                <option value="">Todos</option>
+                <option value="all" {% if selected_month == 'all' %}selected{% endif %}>Ano Todo</option>
+                <option value="1" {% if selected_month == 1 %}selected{% endif %}>Janeiro</option>
+                <option value="2" {% if selected_month == 2 %}selected{% endif %}>Fevereiro</option>
+                <option value="3" {% if selected_month == 3 %}selected{% endif %}>Março</option>
+                <option value="4" {% if selected_month == 4 %}selected{% endif %}>Abril</option>
+                <option value="5" {% if selected_month == 5 %}selected{% endif %}>Maio</option>
+                <option value="6" {% if selected_month == 6 %}selected{% endif %}>Junho</option>
+                <option value="7" {% if selected_month == 7 %}selected{% endif %}>Julho</option>
+                <option value="8" {% if selected_month == 8 %}selected{% endif %}>Agosto</option>
+                <option value="9" {% if selected_month == 9 %}selected{% endif %}>Setembro</option>
+                <option value="10" {% if selected_month == 10 %}selected{% endif %}>Outubro</option>
+                <option value="11" {% if selected_month == 11 %}selected{% endif %}>Novembro</option>
+                <option value="12" {% if selected_month == 12 %}selected{% endif %}>Dezembro</option>
+            </select>
+        </div>
+
+        <!-- Ano -->
+        <div class="filter-group" style="grid-column: span 1;">
+            <label for="year" style="display:block; margin-bottom:6px; font-size:12px; color:var(--text-secondary);">Ano</label>
+            <select id="year" name="year" class="form-control">
+                {% for yr in available_years %}
+                    <option value="{{ yr|stringformat:'d' }}" {% if selected_year|stringformat:'d' == yr|stringformat:'d' %}selected{% endif %}>{{ yr|stringformat:'d' }}</option>
+                {% endfor %}
+            </select>
         </div>
 
         <!-- Botão Filtrar -->
@@ -299,45 +385,64 @@
         <table class="data-table">
             <thead>
                 <tr>
+                    <th style="width: 100px;">Tipo</th>
                     <th>Descrição</th>
                     <th>Categoria</th>
-                    <th>Data</th>
-                    <th>Tipo</th>
-                    <th>Meio/Outros</th>
                     <th style="text-align: right;">Valor</th>
+                    <th style="text-align: center;">Data</th>
+                    <th style="text-align: center; width: 100px;">Ações</th>
                 </tr>
             </thead>
             <tbody>
                 {% for item in page_obj %}
                 <tr>
+                    <!-- Tipo -->
                     <td>
-                        <span style="font-weight: 600; color: var(--text-primary);">{{ item.description }}</span>
-                        {% if item.is_fixed_expense or item.is_fixed_income %}
-                            <span class="tag" style="font-size: 10px; padding: 2px 6px; background: rgba(99, 102, 241, 0.1); color: var(--accent-primary); margin-left: 8px;">Recorrente</span>
+                        {% if item.transaction_type == 'income' %}
+                            <span class="tag" style="background: rgba(16, 185, 129, 0.1); color: var(--success); font-weight: 600; display: inline-block; width: 80px; text-align: center;">Receita</span>
+                        {% else %}
+                            <span class="tag" style="background: rgba(239, 110, 110, 0.1); color: var(--danger); font-weight: 600; display: inline-block; width: 80px; text-align: center;">Despesa</span>
                         {% endif %}
                     </td>
+                    <!-- Descrição -->
+                    <td>
+                        <span style="font-weight: 600; color: var(--text-primary);">{{ item.description }}</span>
+                        {% if item.is_credit %}
+                            <span class="tag" style="font-size: 10px; padding: 2px 6px; background: rgba(239, 68, 68, 0.1); color: #f87171; margin-left: 8px;">Crédito</span>
+                        {% endif %}
+                        {% if item.is_fixed_expense or item.is_fixed_income %}
+                            <span class="tag" style="font-size: 10px; padding: 2px 6px; background: rgba(99, 102, 241, 0.1); color: var(--accent-primary); margin-left: 4px;">Recorrente</span>
+                        {% endif %}
+                    </td>
+                    <!-- Categoria -->
                     <td>
                         <span class="tag" style="background: rgba(255, 255, 255, 0.05); color: var(--text-secondary);">{{ item.category.name }}</span>
                     </td>
-                    <td style="color: var(--text-secondary); font-size: 14px;">
-                        {{ item.date|date:"d/m/Y" }}
-                    </td>
-                    <td>
-                        {% if item.transaction_type == 'income' %}
-                            <span class="text-success" style="font-weight: 500;">Receita</span>
-                        {% else %}
-                            <span class="text-danger" style="font-weight: 500;">Despesa</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if item.is_credit %}
-                            <span class="tag" style="background: rgba(239, 68, 68, 0.1); color: #f87171; font-size: 11px;">Crédito</span>
-                        {% else %}
-                            <span class="tag" style="background: rgba(255, 255, 255, 0.02); color: var(--text-secondary); font-size: 11px;">À Vista</span>
-                        {% endif %}
-                    </td>
+                    <!-- Valor -->
                     <td style="text-align: right; font-weight: 600; color: {% if item.transaction_type == 'income' %}var(--success){% else %}var(--danger){% endif %}; white-space: nowrap;">
                         {% if item.transaction_type == 'income' %}+{% else %}-{% endif %}R${{ item.value|floatformat:2|intcomma }}
+                    </td>
+                    <!-- Data -->
+                    <td style="text-align: center; color: var(--text-secondary); font-size: 13px;">
+                        {{ item.date|date:"d/m/Y" }}
+                    </td>
+                    <!-- Ações -->
+                    <td style="text-align: center;">
+                        <button onclick="openEditModal(this)" 
+                                data-id="{{ item.id }}"
+                                data-description="{{ item.description }}"
+                                data-value="{{ item.value }}"
+                                data-date="{{ item.date|date:'Y-m-d' }}"
+                                data-type="{{ item.transaction_type }}"
+                                data-category="{{ item.category.id }}"
+                                data-credit="{{ item.is_credit }}"
+                                data-fixed-expense="{{ item.is_fixed_expense }}"
+                                data-fixed-income="{{ item.is_fixed_income }}"
+                                class="btn-secondary" 
+                                style="padding: 4px 8px; border-radius: 6px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--panel-border); font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; color: var(--text-primary); transition: all 0.2s;">
+                            <i class='bx bx-edit-alt' style="font-size: 14px; color: var(--accent-primary);"></i>
+                            Editar
+                        </button>
                     </td>
                 </tr>
                 {% empty %}
@@ -354,10 +459,10 @@
     <!-- Paginação -->
     {% if page_obj.has_other_pages %}
     <div class="pagination">
-        <button class="pagination-btn" {% if not page_obj.has_previous %}disabled{% endif %} onclick="window.location.href='?page=1{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_month %}&month={{ selected_month }}{% endif %}'">
+        <button class="pagination-btn" {% if not page_obj.has_previous %}disabled{% endif %} onclick="window.location.href='?page=1{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_month %}&month={{ selected_month }}{% endif %}{% if selected_year %}&year={{ selected_year }}{% endif %}'">
             <i class='bx bx-chevrons-left'></i> Primeira
         </button>
-        <button class="pagination-btn" {% if not page_obj.has_previous %}disabled{% endif %} onclick="window.location.href='?page={% if page_obj.has_previous %}{{ page_obj.previous_page_number }}{% else %}1{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_month %}&month={{ selected_month }}{% endif %}'">
+        <button class="pagination-btn" {% if not page_obj.has_previous %}disabled{% endif %} onclick="window.location.href='?page={% if page_obj.has_previous %}{{ page_obj.previous_page_number }}{% else %}1{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_month %}&month={{ selected_month }}{% endif %}{% if selected_year %}&year={{ selected_year }}{% endif %}'">
             <i class='bx bx-chevron-left'></i> Anterior
         </button>
         
@@ -365,10 +470,10 @@
             Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
         </span>
 
-        <button class="pagination-btn" {% if not page_obj.has_next %}disabled{% endif %} onclick="window.location.href='?page={% if page_obj.has_next %}{{ page_obj.next_page_number }}{% else %}{{ page_obj.paginator.num_pages }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_month %}&month={{ selected_month }}{% endif %}'">
+        <button class="pagination-btn" {% if not page_obj.has_next %}disabled{% endif %} onclick="window.location.href='?page={% if page_obj.has_next %}{{ page_obj.next_page_number }}{% else %}{{ page_obj.paginator.num_pages }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_month %}&month={{ selected_month }}{% endif %}{% if selected_year %}&year={{ selected_year }}{% endif %}'">
             Próxima <i class='bx bx-chevron-right'></i>
         </button>
-        <button class="pagination-btn" {% if not page_obj.has_next %}disabled{% endif %} onclick="window.location.href='?page={{ page_obj.paginator.num_pages }}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_month %}&month={{ selected_month }}{% endif %}'">
+        <button class="pagination-btn" {% if not page_obj.has_next %}disabled{% endif %} onclick="window.location.href='?page={{ page_obj.paginator.num_pages }}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_month %}&month={{ selected_month }}{% endif %}{% if selected_year %}&year={{ selected_year }}{% endif %}'">
             Última <i class='bx bx-chevrons-right'></i>
         </button>
     </div>
@@ -376,7 +481,7 @@
 </div>
 
 <!-- ==========================================
-     MODAL: NOVA TRANSAÇÃO (Duplicado para funcionar na listagem)
+     MODAL: NOVA TRANSAÇÃO
      ========================================== -->
 <div id="transactionModal" class="modal-overlay">
     <div class="modal-content">
@@ -440,6 +545,76 @@
             <div class="form-actions">
                 <button type="button" onclick="closeModal('transactionModal')" class="btn-cancel">Cancelar</button>
                 <button type="submit" class="btn-submit">Salvar Transação</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ==========================================
+     MODAL: EDITAR TRANSAÇÃO
+     ========================================== -->
+<div id="editTransactionModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Editar Transação</h3>
+            <button onclick="closeModal('editTransactionModal')" class="close-btn">&times;</button>
+        </div>
+        <form id="editForm" method="POST" action="">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            
+            <div class="form-group">
+                <label for="edit_description">Descrição *</label>
+                <input type="text" id="edit_description" name="description" class="form-control" required>
+            </div>
+            
+            <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div>
+                    <label for="edit_value">Valor (R$) *</label>
+                    <input type="text" id="edit_value" name="value" class="form-control" required>
+                </div>
+                <div>
+                    <label for="edit_date">Data *</label>
+                    <input type="date" id="edit_date" name="date" class="form-control" required>
+                </div>
+            </div>
+
+            <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div>
+                    <label for="edit_transaction_type">Tipo *</label>
+                    <select id="edit_transaction_type" name="transaction_type" class="form-control" onchange="handleEditTypeChange()" required>
+                        <option value="expense">Despesa</option>
+                        <option value="income">Receita</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="edit_category">Categoria *</label>
+                    <select id="edit_category" name="category" class="form-control" required>
+                        {% for cat in categories %}
+                            <option value="{{ cat.id }}">{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group checkbox-group" id="edit-credit-container">
+                <input type="checkbox" id="edit_is_credit" name="is_credit">
+                <label for="edit_is_credit" style="display: inline; margin: 0;">Transação no Crédito? (Cartão)</label>
+            </div>
+
+            <div class="form-group checkbox-group" id="edit-fixed-expense-container">
+                <input type="checkbox" id="edit_is_fixed_expense" name="is_fixed_expense">
+                <label for="edit_is_fixed_expense" style="display: inline; margin: 0;">Despesa Fixa/Recorrente?</label>
+            </div>
+
+            <div class="form-group checkbox-group" id="edit-fixed-income-container" style="display: none;">
+                <input type="checkbox" id="edit_is_fixed_income" name="is_fixed_income">
+                <label for="edit_is_fixed_income" style="display: inline; margin: 0;">Receita Fixa/Recorrente?</label>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" onclick="closeModal('editTransactionModal')" class="btn-cancel">Cancelar</button>
+                <button type="submit" class="btn-submit">Salvar Alterações</button>
             </div>
         </form>
     </div>

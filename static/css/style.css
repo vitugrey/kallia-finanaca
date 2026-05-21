@@ -410,3 +410,10 @@ a {
 /* Utility */
 .text-success { color: var(--success); }
 .text-danger { color: var(--danger); }
+
+/* Corrigir dropdown de select em tema escuro no Windows/Chromium */
+select option {
+    background-color: #111827;
+    color: #f8fafc;
+}
+

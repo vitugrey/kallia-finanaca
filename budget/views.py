@@ -167,7 +167,24 @@ def transaction_list(request):
     category_id = request.GET.get('category')
     tx_type = request.GET.get('type')
     search_query = request.GET.get('q')
-    month_filter = request.GET.get('month') # Formato: YYYY-MM
+    selected_month_raw = request.GET.get('month')
+    selected_year_raw = request.GET.get('year')
+
+    today = date.today()
+    
+    # Obter anos dinâmicos com base nas transações do banco
+    years_qs = Transaction.objects.dates('date', 'year', order='DESC')
+    available_years = [y.year for y in years_qs]
+    if not available_years:
+        available_years = [today.year]
+        
+    selected_year = today.year
+    if selected_year_raw:
+        selected_year_raw = selected_year_raw.replace('.', '').replace(',', '').strip()
+        try:
+            selected_year = int(selected_year_raw)
+        except ValueError:
+            pass
 
     transactions = Transaction.objects.select_related('category').all().order_by('-date', '-created_at')
 
@@ -182,12 +199,15 @@ def transaction_list(request):
             Q(description__icontains=search_query) | Q(category__name__icontains=search_query)
         )
 
-    if month_filter:
-        try:
-            yr, mn = map(int, month_filter.split('-'))
-            transactions = transactions.filter(date__year=yr, date__month=mn)
-        except ValueError:
-            pass
+    # Filtro de Mês e Ano
+    selected_month = None
+    if selected_month_raw:
+        if selected_month_raw == 'all':
+            selected_month = 'all'
+            transactions = transactions.filter(date__year=selected_year)
+        elif selected_month_raw.isdigit():
+            selected_month = int(selected_month_raw)
+            transactions = transactions.filter(date__year=selected_year, date__month=selected_month)
 
     # Paginação (50 por página)
     paginator = Paginator(transactions, 50)
@@ -202,7 +222,9 @@ def transaction_list(request):
         'selected_category': category_id,
         'selected_type': tx_type,
         'search_query': search_query,
-        'selected_month': month_filter,
+        'selected_month': selected_month,
+        'selected_year': selected_year,
+        'available_years': available_years,
     }
     return render(request, 'budget/transaction_list.html', context)
 
