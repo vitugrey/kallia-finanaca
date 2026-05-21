@@ -1,0 +1,67 @@
+/* ==========================================================================
+   SISTEMA DE ABAS (TABS) - INVESTIMENTOS
+   ========================================================================== */
+.tabs-container {
+    border-bottom: 1px solid var(--panel-border);
+    margin-bottom: 24px;
+    display: flex;
+    gap: 24px;
+    overflow-x: auto;
+}
+
+.tab-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-family: var(--font-heading);
+    font-size: 16px;
+    font-weight: 500;
+    padding: 12px 0;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.3s;
+}
+
+.tab-btn:hover {
+    color: var(--text-primary);
+}
+
+.tab-btn.active {
+    color: var(--accent-primary);
+}
+
+.tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--accent-primary);
+    border-radius: 2px 2px 0 0;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* ==========================================================================
+   IMPORTADOR B3 (UPLOAD FORM)
+   ========================================================================== */
+.file-drop-area {
+    position: relative;
+}
+
+.file-drop-area:hover {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: var(--accent-primary) !important;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}

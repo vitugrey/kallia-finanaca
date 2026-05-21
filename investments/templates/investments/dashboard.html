@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load humanize %}
+{% load static %}
 
 {% block title %}Investimentos | Kallia{% endblock %}
 {% block page_title %}Carteira de Investimentos{% endblock %}
@@ -10,81 +11,6 @@
     <i class='bx bx-cloud-upload' style="font-size: 18px;"></i>
     Importar B3
 </a>
-{% endblock %}
-
-{% block extra_scripts %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const ctx = document.getElementById('allocationChart').getContext('2d');
-        const labels = [{% for alloc in allocation %}'{{ alloc.name }}',{% endfor %}];
-        const data = [{% for alloc in allocation %}{{ alloc.value|stringformat:"f" }},{% endfor %}];
-        
-        const colorMap = {
-            'Fundo Imobiliário': '#3b82f6', // Azul
-            'Ação': '#f59e0b', // Laranja
-            'Renda Fixa': '#10b981', // Verde
-            'ETF': '#ef4444', // Vermelho
-            'BDR': '#8b5cf6', // Roxo
-            'Criptomoeda': '#ec4899', // Rosa
-            'Outro': '#9ca3af' // Cinza
-        };
-        
-        const bgColors = labels.map(label => colorMap[label] || '#9ca3af');
-        
-        new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: labels,
-                datasets: [{
-                    data: data,
-                    backgroundColor: bgColors,
-                    borderWidth: 0,
-                    hoverOffset: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '75%',
-                plugins: {
-                    legend: {
-                        position: 'right',
-                        labels: {
-                            color: '#9ca3af',
-                            font: {
-                                family: "'Inter', sans-serif",
-                                size: 12
-                            },
-                            usePointStyle: true,
-                            padding: 20
-                        }
-                    },
-                    tooltip: {
-                        backgroundColor: '#1f2937',
-                        titleColor: '#f3f4f6',
-                        bodyColor: '#d1d5db',
-                        borderColor: '#374151',
-                        borderWidth: 1,
-                        padding: 12,
-                        callbacks: {
-                            label: function(context) {
-                                let label = context.label || '';
-                                if (label) {
-                                    label += ': ';
-                                }
-                                if (context.parsed !== null) {
-                                    label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'BRL' }).format(context.parsed).replace('R$', 'R$').replace(/\s/g, '');
-                                }
-                                return label;
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    });
-</script>
 {% endblock %}
 
 {% block content %}
@@ -191,4 +117,14 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<!-- Passa dados dinâmicos do Django para o JS externo -->
+<script>
+    const allocationLabels = [{% for alloc in allocation %}'{{ alloc.name }}',{% endfor %}];
+    const allocationData = [{% for alloc in allocation %}{{ alloc.value|stringformat:"f" }},{% endfor %}];
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{% static 'js/investments_dashboard.js' %}"></script>
 {% endblock %}

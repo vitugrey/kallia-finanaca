@@ -1,60 +1,13 @@
 {% extends 'base.html' %}
 {% load humanize %}
+{% load static %}
 
 {% block title %}Lista de Ativos | Kallia{% endblock %}
 {% block page_title %}Todos os Ativos{% endblock %}
 {% block page_subtitle %}Visão detalhada com cotações atualizadas{% endblock %}
 
 {% block extra_head %}
-<style>
-    .tabs-container {
-        border-bottom: 1px solid var(--panel-border);
-        margin-bottom: 24px;
-        display: flex;
-        gap: 24px;
-        overflow-x: auto;
-    }
-    
-    .tab-btn {
-        background: transparent;
-        border: none;
-        color: var(--text-secondary);
-        font-family: var(--font-heading);
-        font-size: 16px;
-        font-weight: 500;
-        padding: 12px 0;
-        cursor: pointer;
-        position: relative;
-        transition: color 0.3s;
-    }
-    
-    .tab-btn:hover {
-        color: var(--text-primary);
-    }
-    
-    .tab-btn.active {
-        color: var(--accent-primary);
-    }
-    
-    .tab-btn.active::after {
-        content: '';
-        position: absolute;
-        bottom: -1px;
-        left: 0;
-        width: 100%;
-        height: 2px;
-        background: var(--accent-primary);
-        border-radius: 2px 2px 0 0;
-    }
-    
-    .tab-content {
-        display: none;
-    }
-    
-    .tab-content.active {
-        display: block;
-    }
-</style>
+<link rel="stylesheet" href="{% static 'css/investments.css' %}">
 {% endblock %}
 
 {% block header_actions %}
@@ -129,53 +82,10 @@
 {% endblock %}
 
 {% block extra_scripts %}
+<!-- Passa dados dinâmicos do Django para o JS externo -->
 <script>
-    function openTab(evt, tabId) {
-        var i, tabcontent, tablinks;
-        tabcontent = document.getElementsByClassName("tab-content");
-        for (i = 0; i < tabcontent.length; i++) {
-            tabcontent[i].style.display = "none";
-            tabcontent[i].classList.remove("active");
-        }
-        tablinks = document.getElementsByClassName("tab-btn");
-        for (i = 0; i < tablinks.length; i++) {
-            tablinks[i].classList.remove("active");
-        }
-        document.getElementById(tabId).style.display = "block";
-        document.getElementById(tabId).classList.add("active");
-        evt.currentTarget.classList.add("active");
-    }
-
-    document.getElementById('btnUpdatePrices').addEventListener('click', function() {
-        const btn = this;
-        const icon = btn.querySelector('i');
-        const span = btn.querySelector('span');
-        
-        icon.classList.add('bx-spin');
-        span.innerText = 'Buscando Cotações...';
-        btn.style.opacity = '0.7';
-        btn.style.pointerEvents = 'none';
-
-        fetch("{% url 'investments:update_prices' %}", {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if(data.status === 'success') {
-                window.location.reload();
-            } else {
-                alert('Erro ao atualizar preços.');
-                window.location.reload();
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            alert('Erro de conexão.');
-            window.location.reload();
-        });
-    });
+    const csrfTokenVal = '{{ csrf_token }}';
+    const updatePricesUrl = '{% url "investments:update_prices" %}';
 </script>
+<script src="{% static 'js/investments_common.js' %}"></script>
 {% endblock %}
