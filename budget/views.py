@@ -22,8 +22,14 @@ def dashboard(request):
     selected_month_raw = request.GET.get('month')
     selected_year_raw = request.GET.get('year')
     
-    selected_year = int(selected_year_raw) if selected_year_raw else today.year
-    
+    if selected_year_raw:
+        selected_year_raw = selected_year_raw.replace('.', '').replace(',', '').strip()
+        
+    try:
+        selected_year = int(selected_year_raw) if selected_year_raw else today.year
+    except ValueError:
+        selected_year = today.year
+        
     if selected_month_raw == 'all':
         selected_month = 'all'
         start_date = date(selected_year, 1, 1)

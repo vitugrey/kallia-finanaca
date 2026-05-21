@@ -427,7 +427,7 @@
 
         <select name="year" class="select-filter">
             {% for yr in available_years %}
-                <option value="{{ yr }}" {% if selected_year == yr %}selected{% endif %}>{{ yr }}</option>
+                <option value="{{ yr|stringformat:'d' }}" {% if selected_year|stringformat:'d' == yr|stringformat:'d' %}selected{% endif %}>{{ yr|stringformat:'d' }}</option>
             {% endfor %}
         </select>
 
