@@ -135,12 +135,12 @@
                     </td>
                     <td style="text-align: center;">
                         <button onclick="openEditModal(this)"
-                                data-id="{{ item.id }}"
+                                data-id="{{ item.id|stringformat:'s' }}"
                                 data-description="{{ item.description }}"
-                                data-value="{{ item.value }}"
+                                data-value="{{ item.value|stringformat:'.2f' }}"
                                 data-date="{{ item.date|date:'Y-m-d' }}"
                                 data-type="{{ item.transaction_type }}"
-                                data-category="{{ item.category.id }}"
+                                data-category="{{ item.category.id|stringformat:'s' }}"
                                 data-credit="{{ item.is_credit }}"
                                 data-fixed-expense="{{ item.is_fixed_expense }}"
                                 data-fixed-income="{{ item.is_fixed_income }}"
