@@ -36,7 +36,7 @@
                 <i class='bx bx-wallet'></i>
                 <span>Carteira</span>
             </a>
-            <a href="#" class="nav-item">
+            <a href="{% url 'goals' %}" class="nav-item {% if request.resolver_match.url_name == 'goals' %}active{% endif %}">
                 <i class='bx bx-target-lock'></i>
                 <span>Metas</span>
             </a>
