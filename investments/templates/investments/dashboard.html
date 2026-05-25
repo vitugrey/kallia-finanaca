@@ -16,7 +16,7 @@
 {% block content %}
 <div class="dashboard-grid">
     <!-- Top 3 Cards -->
-    <a href="{% url 'investments:patrimony_charts' %}" class="panel kpi-card" style="text-decoration: none; display: block;">
+    <a href="{% url 'investments:patrimony_charts' %}" class="panel kpi-card" style="text-decoration: none; display: flex; flex-direction: column;">
         <div class="kpi-header">
             <div class="kpi-icon icon-blue">
                 <i class='bx bx-wallet-alt'></i>
@@ -29,7 +29,7 @@
         </div>
     </a>
 
-    <a href="{% url 'investments:dividends_charts' %}" class="panel kpi-card" style="text-decoration: none; display: block;">
+    <a href="{% url 'investments:dividends_charts' %}" class="panel kpi-card" style="text-decoration: none; display: flex; flex-direction: column;">
         <div class="kpi-header">
             <div class="kpi-icon icon-green">
                 <i class='bx bx-dollar-circle'></i>
