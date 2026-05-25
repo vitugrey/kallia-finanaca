@@ -70,4 +70,122 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
     }
+
+    // ==========================================================================
+    // GRÁFICO DE BARRAS EMPILHADAS (PROVENTOS MENSAIS POR ATIVO)
+    // ==========================================================================
+    const divMonthlyCanvas = document.getElementById('dividendsMonthlyChart');
+    if (divMonthlyCanvas && typeof dividendsMonthlyLabels !== 'undefined' && typeof dividendsMonthlyDatasets !== 'undefined') {
+        const ctx = divMonthlyCanvas.getContext('2d');
+        
+        // Cores vibrantes e harmoniosas para os ativos
+        const chartColors = [
+            '#6366f1', // Indigo
+            '#3b82f6', // Azul
+            '#10b981', // Verde
+            '#f59e0b', // Laranja
+            '#8b5cf6', // Roxo
+            '#ef4444', // Vermelho
+            '#ec4899', // Rosa
+            '#14b8a6', // Teal
+            '#f43f5e', // Rose
+            '#06b6d4', // Cyan
+            '#84cc16', // Lime
+            '#a855f7', // Purple
+            '#64748b'  // Slate
+        ];
+
+        // Mapeia e colore cada dataset
+        const datasetsWithColors = dividendsMonthlyDatasets.map((dataset, idx) => {
+            const color = chartColors[idx % chartColors.length];
+            return {
+                label: dataset.label,
+                data: dataset.data,
+                backgroundColor: color,
+                hoverBackgroundColor: color,
+                borderRadius: 4,
+                borderSkipped: false
+            };
+        });
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: dividendsMonthlyLabels,
+                datasets: datasetsWithColors
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: '#9ca3af',
+                            font: {
+                                family: "'Inter', sans-serif",
+                                size: 11
+                            },
+                            usePointStyle: true,
+                            boxWidth: 8,
+                            padding: 15
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: '#1f2937',
+                        titleColor: '#f3f4f6',
+                        bodyColor: '#d1d5db',
+                        borderColor: '#374151',
+                        borderWidth: 1,
+                        padding: 12,
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.raw !== null) {
+                                    label += new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(context.raw);
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: true,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.05)',
+                            borderColor: 'transparent'
+                        },
+                        ticks: {
+                            color: '#9ca3af',
+                            font: {
+                                family: "'Inter', sans-serif",
+                                size: 11
+                            }
+                        }
+                    },
+                    y: {
+                        stacked: true,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.05)',
+                            borderColor: 'transparent'
+                        },
+                        ticks: {
+                            color: '#9ca3af',
+                            font: {
+                                family: "'Inter', sans-serif",
+                                size: 11
+                            },
+                            callback: function(value) {
+                                return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(value);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
 });

@@ -116,6 +116,16 @@
             </table>
         </div>
     </div>
+
+    <!-- Gráfico de Proventos nos Últimos 12 Meses (Empilhado por Ativo) -->
+    <div class="panel panel-wide">
+        <div class="panel-header">
+            <h3 class="panel-title">Evolução Mensal de Proventos por Ativo (Últimos 12 Meses)</h3>
+        </div>
+        <div style="height: 350px; position: relative;">
+            <canvas id="dividendsMonthlyChart"></canvas>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
@@ -124,6 +134,8 @@
 <script>
     const allocationLabels = [{% for alloc in allocation %}'{{ alloc.name }}',{% endfor %}];
     const allocationData = [{% for alloc in allocation %}{{ alloc.value|stringformat:"f" }},{% endfor %}];
+    const dividendsMonthlyLabels = {{ bar_chart_labels|safe }};
+    const dividendsMonthlyDatasets = {{ bar_chart_datasets|safe }};
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="{% static 'js/investments_dashboard.js' %}"></script>

@@ -84,6 +84,49 @@ def dashboard(request):
     ttm_dividends = Dividend.objects.filter(payment_date__gte=one_year_ago).aggregate(t=Sum('total_value'))['t'] or Decimal('0')
     dividend_yield_ttm = (ttm_dividends / total_patrimony * 100) if total_patrimony > 0 else 0
 
+    # 8. Gráfico de Proventos Mensais por Ativo (Últimos 12 meses)
+    today_date = date.today()
+    months = []
+    for i in range(11, -1, -1):
+        m = today_date.month - i
+        y = today_date.year
+        while m <= 0:
+            m += 12
+            y -= 1
+        months.append((y, m))
+
+    start_date = date(months[0][0], months[0][1], 1)
+    if months[-1][1] == 12:
+        end_date = date(months[-1][0], 12, 31)
+    else:
+        end_date = date(months[-1][0], months[-1][1] + 1, 1) - timedelta(days=1)
+
+    bar_chart_labels = [f"{m:02d}/{y}" for y, m in months]
+    month_to_idx = { (y, m): idx for idx, (y, m) in enumerate(months) }
+
+    asset_data = {}
+    dividends_in_period = Dividend.objects.filter(
+        payment_date__range=(start_date, end_date)
+    ).select_related('asset')
+
+    for d in dividends_in_period:
+        y = d.payment_date.year
+        m = d.payment_date.month
+        if (y, m) in month_to_idx:
+            idx = month_to_idx[(y, m)]
+            ticker = d.asset.ticker or d.asset.name
+            if ticker not in asset_data:
+                asset_data[ticker] = [0.0] * 12
+            asset_data[ticker][idx] += float(d.total_value)
+
+    bar_chart_datasets = []
+    for ticker, values in asset_data.items():
+        if any(values):
+            bar_chart_datasets.append({
+                'label': ticker,
+                'data': values
+            })
+
     context = {
         'portfolio': portfolio,
         'total_patrimony': total_patrimony,
@@ -94,6 +137,8 @@ def dashboard(request):
         'last_month_divs': last_month_divs,
         'dividend_yield_ttm': dividend_yield_ttm,
         'allocation': allocation,
+        'bar_chart_labels': json.dumps(bar_chart_labels),
+        'bar_chart_datasets': json.dumps(bar_chart_datasets),
     }
 
     return render(request, 'investments/dashboard.html', context)
