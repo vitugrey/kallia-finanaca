@@ -1,0 +1,248 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% load static %}
+
+{% block title %}Operações Manuais | Kallia{% endblock %}
+{% block page_title %}Lançamento Manual{% endblock %}
+{% block page_subtitle %}Gerencie investimentos manuais (como BTC ou Reserva no Nubank) que não vêm da B3{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/budget.css' %}">
+<link rel="stylesheet" href="{% static 'css/investments.css' %}">
+<link rel="stylesheet" href="{% static 'css/manual_investments.css' %}">
+{% endblock %}
+
+{% block header_actions %}
+<a href="{% url 'investments:dashboard' %}" class="btn-secondary" style="display: flex; align-items: center; gap: 8px; padding: 10px 20px; background: rgba(255, 255, 255, 0.05); color: var(--text-primary); border: 1px solid var(--panel-border); border-radius: 8px; font-weight: 500; font-size: 14px; text-decoration: none; transition: all 0.2s;">
+    <i class='bx bx-arrow-back' style="font-size: 18px;"></i>
+    Voltar ao Dashboard
+</a>
+{% endblock %}
+
+{% block content %}
+<!-- Alertas de Sucesso / Erro -->
+{% if messages %}
+<div style="margin-bottom: 24px; display: flex; flex-direction: column; gap: 10px;">
+    {% for message in messages %}
+        <div style="padding: 12px 16px; border-radius: 8px; font-size: 14px; font-weight: 500; {% if message.tags == 'success' %}background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.2);{% else %}background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2);{% endif %}">
+            {{ message }}
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="manual-investments-grid">
+    <!-- Coluna da Esquerda (Formulário e Transações) -->
+    <div class="manual-col-left">
+        
+        <!-- Formulário de Lançamento -->
+        <div class="panel">
+            <div class="panel-header" style="margin-bottom: 20px;">
+                <h3 class="panel-title">Lançar Nova Operação</h3>
+            </div>
+            
+            <form method="POST" action="{% url 'investments:manual_investments' %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_transaction">
+                
+                <!-- Escolha de Ativo -->
+                <div class="form-group">
+                    <label>Escolha do Ativo</label>
+                    <div class="radio-options-wrapper">
+                        <label class="radio-label-item">
+                            <input type="radio" name="asset_choice" value="existing" checked onclick="toggleAssetChoice('existing')">
+                            Ativo Existente
+                        </label>
+                        <label class="radio-label-item">
+                            <input type="radio" name="asset_choice" value="new" onclick="toggleAssetChoice('new')">
+                            Criar Novo Ativo
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Seção Ativo Existente -->
+                <div id="section-existing-asset" class="toggle-section active form-group">
+                    <label for="asset_id">Selecionar Ativo</label>
+                    <select id="asset_id" name="asset_id" class="form-control">
+                        <option value="">-- Selecione o Ativo --</option>
+                        {% for asset in assets %}
+                            <option value="{{ asset.id }}">{{ asset.ticker|default:asset.name }} - {{ asset.name }} ({{ asset.get_asset_type_display }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Seção Novo Ativo -->
+                <div id="section-new-asset" class="toggle-section form-group new-asset-border-box">
+                    <div class="grid-2col-input">
+                        <div>
+                            <label for="new_ticker">Ticker / Código</label>
+                            <input type="text" id="new_ticker" name="new_ticker" class="form-control" placeholder="Ex: BTC, NUBANK_RES...">
+                        </div>
+                        <div>
+                            <label for="new_name">Nome do Ativo</label>
+                            <input type="text" id="new_name" name="new_name" class="form-control" placeholder="Ex: Bitcoin, Nu Reserva RF...">
+                        </div>
+                    </div>
+                    <div class="grid-2col-input">
+                        <div>
+                            <label for="new_asset_type">Tipo de Ativo</label>
+                            <select id="new_asset_type" name="new_asset_type" class="form-control">
+                                {% for val, label in asset_types %}
+                                    <option value="{{ val }}" {% if val == 'etf' %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label for="new_category">Categoria</label>
+                            <select id="new_category" name="new_category" class="form-control">
+                                {% for cat in categories %}
+                                    <option value="{{ cat.id }}" {% if cat.name == 'ETFs' %}selected{% endif %}>{{ cat.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Campos da Transação -->
+                <div class="grid-3col-input">
+                    <div class="form-group">
+                        <label for="transaction_type">Tipo da Operação</label>
+                        <select id="transaction_type" name="transaction_type" class="form-control">
+                            <option value="buy">Compra</option>
+                            <option value="sell">Venda</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="quantity">Quantidade</label>
+                        <input type="text" id="quantity" name="quantity" class="form-control" placeholder="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label for="price">Preço Unitário (R$)</label>
+                        <input type="text" id="price" name="price" class="form-control" placeholder="0.00">
+                    </div>
+                </div>
+
+                <div class="grid-2col-input margin-large">
+                    <div class="form-group">
+                        <label for="date">Data da Operação</label>
+                        <input type="date" id="date" name="date" class="form-control" value="{{ today|date:'Y-m-d' }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="broker">Corretora / Banco</label>
+                        <input type="text" id="broker" name="broker" class="form-control" placeholder="Nubank, Binance, Rico..." value="Manual">
+                    </div>
+                </div>
+
+                <div class="form-group margin-large">
+                    <label for="notes">Observações</label>
+                    <textarea id="notes" name="notes" class="form-control" rows="2" placeholder="Opcional..."></textarea>
+                </div>
+
+                <button type="submit" class="btn-submit btn-submit-wide">Registrar Lançamento</button>
+            </form>
+        </div>
+
+        <!-- Últimos Lançamentos Manuais -->
+        <div class="panel">
+            <div class="panel-header" style="margin-bottom: 20px;">
+                <h3 class="panel-title">Histórico de Operações Manuais</h3>
+            </div>
+            <div class="table-scroll-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Ativo</th>
+                            <th>Operação</th>
+                            <th style="text-align: right;">Qtd.</th>
+                            <th style="text-align: right;">Preço</th>
+                            <th style="text-align: right;">Total</th>
+                            <th style="text-align: center;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tx in manual_transactions %}
+                        <tr>
+                            <td style="font-size: 13px; color: var(--text-secondary);">{{ tx.date|date:"d/m/Y" }}</td>
+                            <td>
+                                <span class="asset-title-bold">{{ tx.asset.ticker|default:tx.asset.name }}</span>
+                            </td>
+                            <td>
+                                {% if tx.transaction_type == 'buy' %}
+                                    <span class="tag" style="background: rgba(16, 185, 129, 0.1); color: var(--success); font-weight: 600; padding: 2px 8px; border-radius: 4px;">Compra</span>
+                                {% else %}
+                                    <span class="tag" style="background: rgba(239, 68, 68, 0.1); color: var(--danger); font-weight: 600; padding: 2px 8px; border-radius: 4px;">Venda</span>
+                                {% endif %}
+                            </td>
+                            <td style="text-align: right;">{{ tx.quantity|floatformat:4 }}</td>
+                            <td style="text-align: right; white-space: nowrap;">R${{ tx.price|floatformat:2|intcomma }}</td>
+                            <td style="text-align: right; font-weight: 600; color: var(--text-primary); white-space: nowrap;">R${{ tx.total_value|floatformat:2|intcomma }}</td>
+                            <td style="text-align: center;">
+                                <form method="POST" action="{% url 'investments:delete_transaction' tx.id %}" style="display: inline;" onsubmit="return confirm('Deseja excluir este lançamento?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-delete">
+                                        <i class='bx bx-trash'></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" style="text-align: center; color: var(--text-secondary); padding: 20px;">
+                                Nenhuma transação manual registrada.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Coluna da Direita (Preços Atuais dos Ativos) -->
+    <div class="manual-col-right">
+        <div class="panel">
+            <div class="panel-header" style="margin-bottom: 20px;">
+                <h3 class="panel-title">Preços Atuais dos Ativos</h3>
+                <span style="font-size: 11px; color: var(--text-secondary);">Atualize o preço manual para BTC, Renda Fixa etc.</span>
+            </div>
+            
+            <div class="assets-scroll-container">
+                {% for asset in assets %}
+                <div class="asset-price-card">
+                    <div class="asset-price-header">
+                        <div class="asset-price-info">
+                            <div class="asset-icon asset-icon-box">{{ asset.ticker|slice:":2"|default:asset.name|slice:":2" }}</div>
+                            <div class="asset-desc-text">
+                                <span class="asset-title-bold">{{ asset.ticker|default:asset.name }}</span>
+                                <span class="asset-subtitle-small">{{ asset.get_asset_type_display }} ({{ asset.quantity|floatformat:0 }} cotas)</span>
+                            </div>
+                        </div>
+                        <div class="asset-price-val-wrapper">
+                            <span class="label">Preço Atual</span>
+                            <span class="price">R${{ asset.current_price|floatformat:2|intcomma }}</span>
+                        </div>
+                    </div>
+                    
+                    <form method="POST" action="{% url 'investments:update_asset_price' asset.id %}" class="asset-price-form">
+                        {% csrf_token %}
+                        <div class="price-input-wrapper">
+                            <input type="text" name="current_price" class="price-input" value="{{ asset.current_price|stringformat:'.2f' }}" placeholder="0,00">
+                            <button type="submit" class="btn-save-inline">Salvar</button>
+                        </div>
+                    </form>
+                </div>
+                {% empty %}
+                <div style="text-align: center; color: var(--text-secondary); padding: 20px;">
+                    Nenhum ativo cadastrado.
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/manual_investments.js' %}"></script>
+{% endblock %}

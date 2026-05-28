@@ -1,58 +1,131 @@
 {% extends 'base.html' %}
 {% load humanize %}
+{% load static %}
 
 {% block title %}Visão Geral | Kallia{% endblock %}
 {% block page_title %}Visão Geral{% endblock %}
 {% block page_subtitle %}Consolidação de todo o seu dinheiro{% endblock %}
 
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/overview.css' %}">
+{% endblock %}
+
 {% block content %}
 <div class="dashboard-grid">
-    <!-- Card KPI 1: Total Consolidado -->
-    <div class="panel kpi-card" style="grid-column: span 12; background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15)); border: 1px solid rgba(99, 102, 241, 0.3);">
+    <!-- Card Principal: Total Consolidado (Patrimônio + Saldo Mensal) -->
+    <div class="panel kpi-card overview-consolidated-card">
         <div class="kpi-header">
-            <div class="kpi-icon" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; width: 50px; height: 50px; font-size: 24px; border-radius: 12px;">
+            <div class="kpi-icon overview-icon-container">
                 <i class='bx bx-coin-stack'></i>
             </div>
-            <div style="display: flex; flex-direction: column;">
-                <span style="font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary);">Total Consolidado</span>
-                <span style="font-size: 11px; color: rgba(255,255,255,0.4);">Investimentos + Carteira</span>
+            <div class="overview-header-title">
+                <span class="tag">Total Consolidado</span>
+                <span class="subtitle">Patrimônio + Saldo do Mês ({{ current_month_name }})</span>
             </div>
         </div>
-        <div class="kpi-value" style="font-size: 40px; margin-top: 10px;">R${{ total_consolidated|floatformat:2|intcomma }}</div>
+        <div class="kpi-value overview-kpi-val">
+            R${{ total_consolidated|floatformat:2|intcomma }}
+        </div>
     </div>
 
-    <!-- Card KPI 2: Investimentos -->
-    <a href="{% url 'investments:dashboard' %}" class="panel kpi-card" style="grid-column: span 6; text-decoration: none; display: flex; flex-direction: column; justify-content: space-between;">
-        <div>
-            <div class="kpi-header">
-                <div class="kpi-icon icon-blue">
-                    <i class='bx bx-line-chart'></i>
-                </div>
-                <span>Investimentos (B3)</span>
+    <!-- Card Lateral: Dinheiro Líquido da Carteira do Mês -->
+    <div class="panel kpi-card overview-wallet-card">
+        <div class="kpi-header">
+            <div class="kpi-icon {% if month_balance >= 0 %}icon-green{% else %}icon-red{% endif %}" style="width: 44px; height: 44px; font-size: 22px; border-radius: 10px;">
+                <i class='bx bx-wallet'></i>
             </div>
-            <div class="kpi-value" style="margin-top: 15px; color: var(--text-primary);">R${{ total_patrimony|floatformat:2|intcomma }}</div>
+            <div class="overview-header-title">
+                <span class="tag">Saldo da Carteira</span>
+                <span class="subtitle">Resultado em {{ current_month_name }}</span>
+            </div>
         </div>
-        <div style="margin-top: 20px; display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: var(--accent-primary);">
-            <span>Ver detalhes do portfólio</span>
-            <i class='bx bx-chevron-right' style="font-size: 18px;"></i>
+        <div class="kpi-value overview-kpi-val val-wallet" style="color: {% if month_balance >= 0 %}var(--success){% else %}var(--danger){% endif %};">
+            R${{ month_balance|floatformat:2|intcomma }}
         </div>
-    </a>
+    </div>
 
-    <!-- Card KPI 3: Carteira (Budget) -->
-    <a href="{% url 'budget:dashboard' %}" class="panel kpi-card" style="grid-column: span 6; text-decoration: none; display: flex; flex-direction: column; justify-content: space-between;">
+    <!-- Seção Esquerda: Detalhes do Fluxo de Caixa (Mensal) -->
+    <div class="panel overview-grid-panel">
         <div>
-            <div class="kpi-header">
-                <div class="kpi-icon icon-green">
-                    <i class='bx bx-wallet'></i>
-                </div>
-                <span>Carteira (Fluxo de Caixa)</span>
+            <div class="panel-header overview-panel-title-wrapper">
+                <h3 class="panel-title overview-panel-title">
+                    <i class='bx bx-transfer-alt' style="color: var(--success);"></i>
+                    Fluxo de Caixa ({{ current_month_name }})
+                </h3>
             </div>
-            <div class="kpi-value" style="margin-top: 15px; color: var(--text-primary);">R${{ wallet_balance|floatformat:2|intcomma }}</div>
+            
+            <div class="overview-flow-list">
+                <!-- Dinheiro Recebido -->
+                <div class="overview-flow-item flow-income">
+                    <div class="overview-flow-label">
+                        <i class='bx bx-trending-up' style="color: var(--success);"></i>
+                        <span>Dinheiro Recebido</span>
+                    </div>
+                    <span class="overview-flow-val val-income">R${{ month_income|floatformat:2|intcomma }}</span>
+                </div>
+
+                <!-- Dinheiro Gasto -->
+                <div class="overview-flow-item flow-expense">
+                    <div class="overview-flow-label">
+                        <i class='bx bx-trending-down' style="color: var(--danger);"></i>
+                        <span>Despesas do Mês</span>
+                    </div>
+                    <span class="overview-flow-val val-expense">R${{ month_expense|floatformat:2|intcomma }}</span>
+                </div>
+            </div>
+
+            <!-- Barra de Economia -->
+            <div class="overview-progress-section">
+                <div class="overview-progress-header">
+                    <span>Eficiência de Poupança</span>
+                    <span class="pct">{{ savings_pct }}% economizado</span>
+                </div>
+                <div class="overview-progress-bar-bg">
+                    <div class="overview-progress-bar-fill" style="width: {{ savings_pct }}%;"></div>
+                </div>
+            </div>
         </div>
-        <div style="margin-top: 20px; display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: var(--success);">
-            <span>Ver detalhes de transações</span>
-            <i class='bx bx-chevron-right' style="font-size: 18px;"></i>
+
+        <a href="{% url 'budget:dashboard' %}" class="btn-primary" style="display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 14px; transition: all 0.2s;">
+            <i class='bx bx-wallet' style="font-size: 18px;"></i>
+            Acessar Fluxo de Caixa
+        </a>
+    </div>
+
+    <!-- Seção Direita: Resumo de Portfólio de Investimentos -->
+    <div class="panel overview-grid-panel">
+        <div>
+            <div class="panel-header overview-panel-title-wrapper">
+                <h3 class="panel-title overview-panel-title">
+                    <i class='bx bx-line-chart' style="color: var(--accent-primary);"></i>
+                    Portfólio de Investimentos
+                </h3>
+            </div>
+
+            <div class="overview-investments-summary">
+                <span class="label">Patrimônio de Investimentos</span>
+                <span class="val">R${{ total_patrimony|floatformat:2|intcomma }}</span>
+            </div>
+
+            <p class="overview-investments-desc">
+                Seu portfólio consolida todas as suas posições importadas automaticamente da B3, bem como criptoativos (BTC) e fundos de liquidez (Nubank) cadastrados manualmente.
+            </p>
         </div>
-    </a>
+
+        <div class="overview-actions-column">
+            <a href="{% url 'investments:dashboard' %}" class="btn-primary" style="display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 14px; transition: all 0.2s; background: rgba(99, 102, 241, 0.12); color: var(--accent-primary); border: 1px solid rgba(99, 102, 241, 0.25);">
+                <i class='bx bx-chart' style="font-size: 18px;"></i>
+                Dashboard de Ativos
+            </a>
+            <div class="overview-actions-row">
+                <a href="{% url 'investments:manual_investments' %}" class="btn-primary" style="display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px; border-radius: 10px; text-decoration: none; font-weight: 500; font-size: 13px; transition: all 0.2s; background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.2);">
+                    <i class='bx bx-plus' style="font-size: 16px;"></i> Lançamento Manual
+                </a>
+                <a href="{% url 'goals' %}" class="btn-primary" style="display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px; border-radius: 10px; text-decoration: none; font-weight: 500; font-size: 13px; transition: all 0.2s; background: rgba(245, 158, 11, 0.1); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.2);">
+                    <i class='bx bx-target-lock' style="font-size: 16px;"></i> Acessar Metas
+                </a>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

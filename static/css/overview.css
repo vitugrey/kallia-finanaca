@@ -1,0 +1,211 @@
+/* ==========================================================================
+   ESTILOS DE VISÃO GERAL (OVERVIEW)
+   ========================================================================== */
+.overview-consolidated-card {
+    grid-column: span 8;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(139, 92, 246, 0.12));
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.overview-wallet-card {
+    grid-column: span 4;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.overview-icon-container {
+    background: rgba(99, 102, 241, 0.15);
+    color: var(--accent-primary);
+    width: 44px;
+    height: 44px;
+    font-size: 22px;
+    border-radius: 10px;
+}
+
+.overview-header-title {
+    display: flex;
+    flex-direction: column;
+}
+
+.overview-header-title span.tag {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.overview-header-title span.subtitle {
+    font-size: 11px;
+    color: var(--text-secondary);
+    opacity: 0.8;
+}
+
+.overview-kpi-val {
+    font-size: 36px;
+    margin-top: 12px;
+    color: var(--text-primary);
+    font-family: var(--font-heading);
+    font-weight: 700;
+}
+
+.overview-kpi-val.val-wallet {
+    font-size: 28px;
+}
+
+.overview-grid-panel {
+    grid-column: span 6;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 24px;
+}
+
+.overview-panel-title-wrapper {
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--panel-border);
+    padding-bottom: 12px;
+}
+
+.overview-panel-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.overview-flow-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.overview-flow-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 12px;
+    padding: 12px 16px;
+}
+
+.overview-flow-item.flow-income {
+    background: rgba(16, 185, 129, 0.02);
+    border: 1px solid rgba(16, 185, 129, 0.08);
+}
+
+.overview-flow-item.flow-expense {
+    background: rgba(239, 68, 68, 0.02);
+    border: 1px solid rgba(239, 68, 68, 0.08);
+}
+
+.overview-flow-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.overview-flow-label i {
+    font-size: 20px;
+}
+
+.overview-flow-label span {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.overview-flow-val {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.overview-flow-val.val-income {
+    color: var(--success);
+}
+
+.overview-flow-val.val-expense {
+    color: var(--danger);
+}
+
+.overview-progress-section {
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+
+.overview-progress-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.overview-progress-header span.pct {
+    font-weight: 600;
+    color: var(--success);
+}
+
+.overview-progress-bar-bg {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.overview-progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--success), var(--accent-primary));
+    border-radius: 4px;
+    transition: width 0.5s ease-in-out;
+}
+
+.overview-investments-summary {
+    background: rgba(99, 102, 241, 0.02);
+    border: 1px solid rgba(99, 102, 241, 0.08);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.overview-investments-summary span.label {
+    font-size: 12px;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    letter-spacing: 0.5px;
+    font-weight: 500;
+}
+
+.overview-investments-summary span.val {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-family: var(--font-heading);
+}
+
+.overview-investments-desc {
+    font-size: 13.5px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0 0 20px;
+    font-weight: 400;
+}
+
+.overview-actions-column {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.overview-actions-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}

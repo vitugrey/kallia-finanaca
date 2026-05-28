@@ -10,4 +10,7 @@ urlpatterns = [
     path('patrimonio/', views.patrimony_charts, name='patrimony_charts'),
     path('ativos/', views.asset_list, name='asset_list'),
     path('api/update-prices/', views.update_prices_yfinance, name='update_prices'),
+    path('manual/', views.manual_investments, name='manual_investments'),
+    path('manual/excluir-transacao/<int:tx_id>/', views.delete_transaction, name='delete_transaction'),
+    path('manual/atualizar-preco/<int:asset_id>/', views.update_asset_price, name='update_asset_price'),
 ]

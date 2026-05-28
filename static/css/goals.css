@@ -315,23 +315,126 @@
     color: var(--text-secondary);
 }
 
-/* Scratchpad de Anotações */
-.scratchpad-textarea {
-    width: 100%;
-    height: 250px;
-    background: rgba(17, 24, 39, 0.4);
+.pill-above {
+    background: rgba(59, 130, 246, 0.15);
+    color: #3b82f6;
+}
+
+/* Lembretes Fundamentais */
+.reminders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    flex-grow: 1;
+    justify-content: center;
+}
+
+.reminder-card {
+    display: flex;
+    gap: 16px;
+    background: rgba(255, 255, 255, 0.01);
     border: 1px solid var(--panel-border);
     border-radius: 16px;
     padding: 16px;
-    color: var(--text-primary);
-    font-family: var(--font-base);
-    font-size: 14px;
-    line-height: 1.6;
-    outline: none;
-    resize: none;
-    transition: border-color 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    align-items: center;
 }
 
-.scratchpad-textarea:focus {
-    border-color: var(--accent-primary);
+.reminder-card:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.reminder-card.reminder-purple {
+    background: rgba(139, 92, 246, 0.02);
+    border-color: rgba(139, 92, 246, 0.1);
+}
+
+.reminder-card.reminder-purple:hover {
+    background: rgba(139, 92, 246, 0.04);
+    border-color: rgba(139, 92, 246, 0.2);
+}
+
+.reminder-card.reminder-blue {
+    background: rgba(59, 130, 246, 0.02);
+    border-color: rgba(59, 130, 246, 0.1);
+}
+
+.reminder-card.reminder-blue:hover {
+    background: rgba(59, 130, 246, 0.04);
+    border-color: rgba(59, 130, 246, 0.2);
+}
+
+.reminder-card.reminder-green {
+    background: rgba(16, 185, 129, 0.02);
+    border-color: rgba(16, 185, 129, 0.1);
+}
+
+.reminder-card.reminder-green:hover {
+    background: rgba(16, 185, 129, 0.04);
+    border-color: rgba(16, 185, 129, 0.2);
+}
+
+.reminder-card.reminder-yellow {
+    background: rgba(234, 179, 8, 0.02);
+    border-color: rgba(234, 179, 8, 0.1);
+}
+
+.reminder-card.reminder-yellow:hover {
+    background: rgba(234, 179, 8, 0.04);
+    border-color: rgba(234, 179, 8, 0.2);
+}
+
+.reminder-icon {
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 48px;
+    height: 48px;
+    border-radius: 12px;
+}
+
+.reminder-icon.icon-purple {
+    background: rgba(139, 92, 246, 0.1);
+    color: #8b5cf6;
+}
+
+.reminder-icon.icon-blue {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.reminder-icon.icon-green {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.reminder-icon.icon-yellow {
+    background: rgba(234, 179, 8, 0.1);
+    color: #eab308;
+}
+
+.reminder-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.reminder-tag {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+}
+
+.reminder-text {
+    font-size: 13.5px;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.5;
+    font-weight: 500;
 }

@@ -1,0 +1,216 @@
+/* ==========================================================================
+   ESTILOS DE LANÇAMENTO MANUAL DE INVESTIMENTOS
+   ========================================================================== */
+.toggle-section {
+    display: none;
+}
+
+.toggle-section.active {
+    display: block;
+}
+
+.btn-delete {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 6px;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s;
+}
+
+.btn-delete:hover {
+    background: #ef4444;
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+.price-input-wrapper {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.price-input {
+    width: 100px;
+    padding: 6px 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 13px;
+    outline: none;
+}
+
+.price-input:focus {
+    border-color: var(--accent-primary);
+}
+
+.btn-save-inline {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--success);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 6px;
+    padding: 6px 10px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+}
+
+.btn-save-inline:hover {
+    background: var(--success);
+    color: #fff;
+}
+
+/* Layout e Grids */
+.manual-investments-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.manual-col-left {
+    grid-column: span 7;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.manual-col-right {
+    grid-column: span 5;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Formulário e Agrupamentos */
+.radio-options-wrapper {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.radio-label-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    color: var(--text-primary);
+}
+
+.new-asset-border-box {
+    border-left: 2px solid var(--accent-primary);
+    padding-left: 16px;
+}
+
+.grid-2col-input {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.grid-2col-input.margin-large {
+    margin-bottom: 24px;
+}
+
+.grid-3col-input {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.form-group.margin-large {
+    margin-bottom: 24px;
+}
+
+.btn-submit-wide {
+    width: 100%;
+}
+
+.table-scroll-container {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.assets-scroll-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-height: 700px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+/* Cards de Preço de Ativos */
+.asset-price-card {
+    background: rgba(255, 255, 255, 0.01);
+    border: 1px solid var(--panel-border);
+    border-radius: 12px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.asset-price-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.asset-price-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.asset-icon-box {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+    flex-shrink: 0;
+}
+
+.asset-desc-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.asset-title-bold {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.asset-subtitle-small {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.asset-price-val-wrapper {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.asset-price-val-wrapper span.label {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.asset-price-val-wrapper span.price {
+    font-weight: 600;
+    color: var(--accent-primary);
+}
+
+.asset-price-form {
+    margin: 0;
+    display: flex;
+    justify-content: flex-end;
+}

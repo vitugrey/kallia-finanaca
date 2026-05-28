@@ -23,87 +23,63 @@ Django MVT com dois apps principais: **investments** e **budget**. O projeto pos
 ## 2. App Investments (Estado Atual — CONCLUÍDO)
 
 ### Fonte de Dados
-- O usuário importa relatórios mensais da B3 no formato **XLSX** (não PDF).
-- Os arquivos ficam na pasta `static/xlsx/<ano>/`.
-- O script `scripts/import_b3.py` processa os XLSXs com `pandas`.
-- **Não há lançamentos manuais de investimentos** — tudo vem do relatório B3.
+- **Importação B3**: O usuário importa relatórios mensais da B3 no formato **XLSX**. O script `scripts/import_b3.py` processa os XLSXs com `pandas` e cria os ativos/operações com `source='b3_import'`.
+- **Lançamentos Manuais**: Ativos e transações que não vêm da B3 (como BTC ou a Reserva no Nubank) podem ser lançados de forma manual pela tela de Lançamento Manual, gerando registros com `source='manual'`.
 
 ### Models (`investments/models.py`)
 
 #### `Asset`
 Representa um ativo (ação, FII, ETF, renda fixa, etc).
-
 Campos: `ticker`, `name`, `category (FK)`, `asset_type`, `current_price`, `is_active`.
 
-**Properties importantes (não são campos no banco — calculados):**
-- `quantity`: compras - vendas (posição líquida atual)
-- `average_price`: **Preço médio da posição atual**, reconstruído transação a transação em ordem cronológica. Zera completamente quando a posição vai a zero (venda total). Isso resolve o problema de ativos que foram vendidos e recomprados (ex: TAEE4, BBAS3).
-- `total_invested`: total em R$ aportado - realizado
-- `total_dividends`: total histórico de proventos
-- `ttm_dividends`: proventos dos últimos 12 meses
-- `ttm_dividends_monthly`: média mensal dos últimos 12 meses
+**Properties importantes (calculadas):**
+- `quantity`: compras - vendas (posição líquida atual).
+- `average_price`: preço médio reconstruído cronologicamente (reseta se a quantidade zerar).
+- `total_invested`: total investido líquido.
+- `total_dividends`: proventos históricos totais.
 
 #### `Transaction`
-Registro de compra ou venda. Tipos: `buy`, `sell`.
-
+Operação de compra ou venda (`buy`, `sell`).
 Campos: `asset (FK)`, `transaction_type`, `quantity`, `price`, `total_value`, `date`, `broker`, `notes`, `source`.
 
 #### `Dividend`
-Registro de provento recebido.
-
-Campos: `asset (FK)`, `dividend_type`, `quantity`, `value_per_share`, `total_value`, `payment_date`, `source`.
+Registro de provento recebido (`dividend`, `jcp`, `income`, `amortization`).
 
 #### `Category`
-Categoria dos ativos (ex: Ações, FIIs, ETFs).
+Categorias (ex: Acoes, FIIs, ETFs, Renda Fixa).
 
 ### Views (`investments/views.py`)
 
 | View | URL | Descrição |
 |---|---|---|
-| `dashboard` | `/investments/` | Cards KPI + gráfico de pizza da carteira + lista resumida de ativos |
-| `import_b3` | `/investments/import/` | Upload do XLSX mensal da B3 |
-| `dividends_charts` | `/investments/dividends/` | Gráficos de dividendos com 3 abas |
-| `patrimony_charts` | `/investments/patrimony/` | Gráficos de evolução de patrimônio com 2 abas |
-| `asset_list` | `/investments/assets/` | Tabela detalhada de ativos por classe |
-| `update_prices_yfinance` | `/investments/api/update-prices/` | Busca cotações no Yahoo Finance (manual) |
-
-### Lógica dos KPIs do Dashboard
-- **Patrimônio Total**: soma de `(quantity × current_price)` para todos os ativos com `is_active=True` e `quantity > 0`. Se `current_price = 0`, usa o `average_price` como fallback.
-- **Dividendos (Último Mês)**: soma dos proventos com `payment_date` no mês anterior.
-- **Dividend Yield TTM**: `(proventos dos últimos 12 meses / patrimônio total) × 100`.
-- **Rentabilidade**: `patrimônio atual - total aportado (qty × PM)`.
-
-### Lógica da Página de Ativos (`asset_list`)
-Colunas: Ticket, Qtd, Preço Médio (posição atual), Preço Atual (YF), Total Aportado, Patrimônio Atual, Rentabilidade (R$ e %), DY (12m), Dividendos/mês (média 12m).
-
-Ordenação: por patrimônio decrescente dentro de cada classe.
-
-### Cotações (Yahoo Finance)
-- Atualização **manual** via botão na página de ativos.
-- Endpoint: `POST /investments/api/update-prices/`
-- O ticker enviado para o YF é `ticker + ".SA"` (ex: `BBAS3.SA`).
-
-### Ajustes Manuais Conhecidos no Banco de Dados
-- **BBAS3**: Split 1:2 em 15/04/2024 registrado como compra de 10 cotas a R$0,00 com `notes='Desdobramento 1:2 (Split)'`.
-- **BBSE3 e MXRF11**: Reativados manualmente (`is_active=True`) pois o importador anual os havia desativado indevidamente.
-- **CDB - BANCO DO BRASIL S/A**: Ativo desativado e transações fantasmas removidas.
+| `dashboard` | `/investments/` | KPIs de investimentos + gráficos + lista resumida de ativos |
+| `import_report` | `/investments/importar/` | Upload do XLSX mensal da B3 |
+| `dividends_charts` | `/investments/dividendos/` | Gráficos de evolução de dividendos |
+| `patrimony_charts` | `/investments/patrimonio/` | Evolução patrimonial líquida |
+| `asset_list` | `/investments/ativos/` | Tabela detalhada de ativos por classe |
+| `update_prices_yfinance` | `/investments/api/update-prices/` | Atualiza cotações via yfinance (manual) |
+| `manual_investments` | `/investments/manual/` | Dashboard de criação de ativos e transações manuais |
+| `delete_transaction` | `/investments/manual/excluir-transacao/<int:tx_id>/` | Exclusão de transação manual |
+| `update_asset_price` | `/investments/manual/atualizar-preco/<int:asset_id>/` | Atualização do preço atual de ativos de forma manual |
 
 ---
 
-## 3. App Budget (Estado Atual — EM DESENVOLVIMENTO)
+## 3. App Budget (Estado Atual — CONCLUÍDO)
 
-Models básicos existem (`budget/models.py`) mas sem views ou templates funcionais ainda.
+App de fluxo de caixa para controle financeiro pessoal de curto prazo.
+
+### Models (`budget/models.py`)
+- `Category`: Categoria de transação financeira pessoal (ex: Moradia, Alimentação, Salário).
+- `Transaction`: Transação de receita (`income`) ou despesa (`expense`). Permite configurar se é despesa de crédito (`is_credit`) ou transação recorrente (`is_fixed_income` / `is_fixed_expense`).
 
 ---
 
-## 4. Design System
+## 4. Design System & Frontend
 
 - **Tema**: Dark (`--bg-color: #0b0f19`)
-- **Glassmorphism**: panels com `backdrop-filter: blur(12px)` e borda sutil
-- **Cores**: Accent primary `#6366f1` (roxo), Success `#10b981` (verde), Danger `#ef4444` (vermelho), Warning `#f59e0b` (amarelo)
-- **Fontes**: Inter (corpo) + Outfit (títulos)
-- **Gráficos por classe de ativo**: Azul = FIIs, Laranja = Ações, Verde = Renda Fixa, Vermelho = ETFs
-- **Formatação de moeda**: `R$` colado no número, ponto para milhar, vírgula para decimal (padrão BR: `R$1.234,56`)
+- **Glassmorphism**: Painéis com `backdrop-filter: blur(12px)` e bordas sutis.
+- **Cores**: Accent primary `#6366f1` (roxo), Success `#10b981` (verde), Danger `#ef4444` (vermelho), Warning `#f59e0b` (amarelo), Info `#3b82f6` (azul).
+- **Separação de Código**: Estilos (CSS) e Lógicas (JS) devem ficar obrigatoriamente fora dos templates HTML, alocados nos respectivos arquivos em `static/css/` e `static/js/`.
 
 ---
 
@@ -123,30 +99,43 @@ kallia-financa/
 │       ├── import.html
 │       ├── asset_list.html
 │       ├── dividends_charts.html
-│       └── patrimony_charts.html
-├── budget/             # App de budget (em construção)
+│       ├── patrimony_charts.html
+│       └── manual_investments.html
+├── budget/             # App de budget (fluxo de caixa)
+│   ├── models.py
+│   ├── views.py
+│   ├── urls.py
+│   └── templates/budget/
+│       ├── dashboard.html
+│       └── transaction_list.html
 ├── scripts/
-│   └── import_b3.py    # Motor de importação XLSX
+│   └── import_b3.py    # Importador XLSX
 ├── static/
-│   ├── css/style.css
-│   └── xlsx/           # Relatórios B3 separados por ano
-│       ├── 2020/
-│       ├── ...
-│       └── 2026/
+│   ├── css/
+│   │   ├── style.css
+│   │   ├── budget.css
+│   │   ├── investments.css
+│   │   ├── goals.css
+│   │   ├── overview.css
+│   │   └── manual_investments.css
+│   └── js/
+│       ├── investments_dashboard.js
+│       ├── investments_common.js
+│       ├── goals.js
+│       └── manual_investments.js
 └── templates/
-    └── base.html       # Layout base com sidebar
+    ├── base.html       # Layout base com sidebar
+    ├── overview.html   # Visão Geral consolidada
+    └── goals.html      # Metas e simuladores
 ```
 
 ---
 
 ## 6. Regras de Colaboração
 
-- **Idioma do código**: Inglês (variáveis, funções, comentários técnicos)
-- **Idioma da UI**: Português brasileiro
-- **Nunca criar lançamentos manuais de investimentos** — dados vêm exclusivamente dos XLSXs da B3
-- **Preço médio**: sempre usar o algoritmo de posição atual (que zera no zeragem da posição), nunca a média simples de todas as compras
-- **Cotações YF**: sempre manual (botão), nunca automático no carregamento da página
-- **Commits**: usar `uv run` para todos os comandos Python, PowerShell usa `;` em vez de `&&`
-- **Formato de data**: brasileiro (DD/MM/AAAA)
-- **Ajustes de split**: registrar como transação com `price=0` e `notes` descritivo
-- **`is_active`**: só deve ser `False` se o ativo genuinamente não faz mais parte da carteira (quantidade = 0 por um longo período)
+- **Idioma do código**: Inglês (variáveis, funções, tabelas, comentários técnicos).
+- **Idioma da UI**: Português brasileiro.
+- **Separação de Static Files**: Estilos inline (`style="..."`) e scripts inline são estritamente desencorajados. Todo CSS novo deve ir para a pasta `static/css/` e todo JS novo para `static/js/`.
+- **Preço médio**: Sempre usar a propriedade `average_price` que reconstrói a carteira cronologicamente e reseta se a posição zerar.
+- **Cotações yfinance**: Manual (via botão na interface), nunca de forma síncrona no carregamento da página.
+- **Ambiente de Execução**: Comandos de backend usam o gerenciador de pacotes `uv` (ex: `uv run manage.py ...`).

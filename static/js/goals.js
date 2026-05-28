@@ -190,32 +190,5 @@ document.addEventListener("DOMContentLoaded", function() {
     if (checklistItems.length > 0) {
         updateChecklistProgress();
     }
-
-
-    // ==========================================================================
-    // PARTE 3: ANOTAÇÕES SCRATCHPAD (SALVAMENTO AUTOMÁTICO DEBOUNCED EM LOCALSTORAGE)
-    // ==========================================================================
-    const scratchpad = document.getElementById('scratchpad');
-    const saveIndicator = document.getElementById('save-indicator');
-    
-    if (scratchpad && saveIndicator) {
-        // Recupera anotações anteriores
-        scratchpad.value = localStorage.getItem('kallia_scratchpad_notes') || '';
-
-        let saveTimeout = null;
-        scratchpad.addEventListener('input', function() {
-            saveIndicator.innerHTML = "<i class='bx bx-loader-alt bx-spin'></i> Editando...";
-            saveIndicator.style.color = "var(--warning)";
-
-            if (saveTimeout) {
-                clearTimeout(saveTimeout);
-            }
-
-            saveTimeout = setTimeout(() => {
-                localStorage.setItem('kallia_scratchpad_notes', scratchpad.value);
-                saveIndicator.innerHTML = "<i class='bx bx-check-circle'></i> Salvo no navegador";
-                saveIndicator.style.color = "var(--success)";
-            }, 1000); // Salva após 1 segundo sem digitar
-        });
-    }
 });
+

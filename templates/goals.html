@@ -18,11 +18,15 @@
             <div class="kpi-icon icon-blue">
                 <i class='bx bx-wallet-alt'></i>
             </div>
-            <span>Patrimônio Atual</span>
+            <span>Patrimônio Atual / Meta</span>
         </div>
-        <div class="kpi-value" style="color: var(--text-primary);">R${{ total_patrimony|floatformat:2|intcomma }}</div>
+        <div class="kpi-value" style="color: var(--text-primary); font-size: 20px;">R$ {{ total_patrimony|floatformat:0|intcomma }} / R$ 50.000</div>
         <div class="kpi-trend trend-up" style="background: transparent; color: var(--text-secondary); font-size: 12px; font-weight: 500; padding: 0;">
-            Puxado de Investimentos
+            {% if patrimony_missing > 0 %}
+                Falta R$ {{ patrimony_missing|floatformat:2|intcomma }} para os R$ 50k
+            {% else %}
+                Meta de R$ 50k alcançada! 🎉
+            {% endif %}
         </div>
     </div>
 
@@ -31,11 +35,15 @@
             <div class="kpi-icon icon-purple">
                 <i class='bx bx-plus-circle'></i>
             </div>
-            <span>Média de Aportes (6m)</span>
+            <span>Aporte Atual (6m) / Meta</span>
         </div>
-        <div class="kpi-value" style="color: var(--text-primary);">R${{ avg_contribution|floatformat:2|intcomma }}</div>
+        <div class="kpi-value" style="color: var(--text-primary); font-size: 20px;">R$ {{ avg_contribution|floatformat:0|intcomma }} / R$ 1.000</div>
         <div class="kpi-trend trend-up" style="background: transparent; color: var(--text-secondary); font-size: 12px; font-weight: 500; padding: 0;">
-            Compras líquidas mensais na B3
+            {% if contribution_missing > 0 %}
+                Falta R$ {{ contribution_missing|floatformat:2|intcomma }} para a meta de R$ 1k
+            {% else %}
+                Meta de aporte atingida! 🚀
+            {% endif %}
         </div>
     </div>
 
@@ -44,11 +52,11 @@
             <div class="kpi-icon icon-green">
                 <i class='bx bx-coin-stack'></i>
             </div>
-            <span>Média de Proventos (12m)</span>
+            <span>Rendimento Mensal (Yield)</span>
         </div>
-        <div class="kpi-value" style="color: var(--text-primary);">R${{ avg_dividend|floatformat:2|intcomma }}</div>
+        <div class="kpi-value" style="color: var(--text-primary); font-size: 20px;">{{ yield_pct }}% ao mês</div>
         <div class="kpi-trend trend-up" style="background: transparent; color: var(--text-secondary); font-size: 12px; font-weight: 500; padding: 0;">
-            Dividendos/JCP mensais
+            Comparado à Selic: ~1,13% (14,50% a.a.)
         </div>
     </div>
 </div>
@@ -60,6 +68,42 @@
             <h3 class="panel-title">Calculadora de Independência Financeira</h3>
         </div>
         
+        <!-- Resultados da Calculadora -->
+        <h4 style="font-size: 15px; color: var(--text-primary); margin-bottom: 8px; font-weight: 600;">Tempo Estimado para Metas</h4>
+        <div class="calculator-results" style="margin-top: 0; margin-bottom: 20px;">
+            <div class="result-card" id="card-50k">
+                <span class="result-title">Tempo até R$ 50.000</span>
+                <span class="result-value" id="time-50k">--</span>
+            </div>
+            <div class="result-card" id="card-100k">
+                <span class="result-title">Tempo até R$ 100.000</span>
+                <span class="result-value" id="time-100k">--</span>
+            </div>
+            <div class="result-card" id="card-1m" style="grid-column: span 2;">
+                <span class="result-title">Tempo até R$ 1.000.000 (1 Milhão)</span>
+                <span class="result-value" id="time-1m">--</span>
+            </div>
+        </div>
+
+        <h4 style="font-size: 15px; color: var(--text-primary); margin-bottom: 8px; font-weight: 600;">Projeção de Patrimônio Futuro</h4>
+        <div class="calculator-results" style="grid-template-columns: repeat(3, 1fr); margin-top: 0; margin-bottom: 20px;">
+            <div class="result-card projection">
+                <span class="result-title">Em 1 Ano</span>
+                <span class="result-value" id="proj-1y">--</span>
+            </div>
+            <div class="result-card projection">
+                <span class="result-title">Em 5 Anos</span>
+                <span class="result-value" id="proj-5y">--</span>
+            </div>
+            <div class="result-card projection">
+                <span class="result-title">Em 10 Anos</span>
+                <span class="result-value" id="proj-10y">--</span>
+            </div>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid var(--panel-border); margin: 15px 0;">
+
+        <!-- Inputs da Calculadora -->
         <div class="input-group">
             <label class="input-label">
                 <span>Patrimônio Inicial</span>
@@ -94,95 +138,58 @@
                 <span>Agressivo (2.0%)</span>
             </div>
         </div>
-
-        <hr style="border: 0; border-top: 1px solid var(--panel-border); margin: 15px 0;">
-
-        <!-- Resultados da Calculadora -->
-        <h4 style="font-size: 15px; color: var(--text-primary); margin-bottom: 12px; font-weight: 600;">Tempo Estimado para Metas</h4>
-        <div class="calculator-results">
-            <div class="result-card" id="card-50k">
-                <span class="result-title">Tempo até R$ 50.000</span>
-                <span class="result-value" id="time-50k">--</span>
-            </div>
-            <div class="result-card" id="card-100k">
-                <span class="result-title">Tempo até R$ 100.000</span>
-                <span class="result-value" id="time-100k">--</span>
-            </div>
-            <div class="result-card" id="card-1m" style="grid-column: span 2;">
-                <span class="result-title">Tempo até R$ 1.000.000 (1 Milhão)</span>
-                <span class="result-value" id="time-1m">--</span>
-            </div>
-        </div>
-
-        <h4 style="font-size: 15px; color: var(--text-primary); margin: 20px 0 12px; font-weight: 600;">Projeção de Patrimônio Futuro</h4>
-        <div class="calculator-results" style="grid-template-columns: repeat(3, 1fr);">
-            <div class="result-card projection">
-                <span class="result-title">Em 1 Ano</span>
-                <span class="result-value" id="proj-1y">--</span>
-            </div>
-            <div class="result-card projection">
-                <span class="result-title">Em 5 Anos</span>
-                <span class="result-value" id="proj-5y">--</span>
-            </div>
-            <div class="result-card projection">
-                <span class="result-title">Em 10 Anos</span>
-                <span class="result-value" id="proj-10y">--</span>
-            </div>
-        </div>
     </div>
 
-    <!-- Bloco 2: Passo a Passo do Salário -->
+    <!-- Bloco 4: Lembretes Fundamentais -->
     <div class="panel panel-right" style="display: flex; flex-direction: column;">
-        <div class="panel-header" style="margin-bottom: 10px;">
-            <h3 class="panel-title">Passo a Passo do Salário</h3>
-            <span id="checklist-counter" style="font-size: 12px; font-weight: 600; color: var(--accent-primary);">0/10 concluídos</span>
+        <div class="panel-header" style="margin-bottom: 16px;">
+            <h3 class="panel-title">Lembretes Fundamentais</h3>
+            <span style="font-size: 11px; color: var(--accent-primary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Mentalidade & Foco</span>
         </div>
         
-        <div class="checklist-progress-bar">
-            <div class="checklist-progress-fill" id="checklist-progress"></div>
-        </div>
+        <div class="reminders-list">
+            <!-- Item 1: Estratégia de Reservas -->
+            <div class="reminder-card reminder-green">
+                <div class="reminder-icon icon-green">
+                    <i class='bx bx-shield-quarter'></i>
+                </div>
+                <div class="reminder-content">
+                    <span class="reminder-tag">Estratégia de Reservas</span>
+                    <p class="reminder-text">A reserva de emergência deve ser de <strong>R$ 6.000 (6k)</strong>. Só depois pensar na reserva de oportunidade.</p>
+                </div>
+            </div>
 
-        <div class="checklist-container" id="checklist-container">
-            <!-- Checklist Items -->
-            <div class="checklist-item" data-idx="0">
-                <div class="checklist-checkbox"><i class='bx bx-check'></i></div>
-                <span class="checklist-text">Pagar a fatura do cartão (último dia do mês)</span>
+            <!-- Item 2: Patrimônio Real -->
+            <div class="reminder-card reminder-purple">
+                <div class="reminder-icon icon-purple">
+                    <i class='bx bx-home-alt'></i>
+                </div>
+                <div class="reminder-content">
+                    <span class="reminder-tag">Patrimônio Real</span>
+                    <p class="reminder-text">Lembre-se de que patrimônio vai além do dinheiro. Bens como sua casa ou carro possuem um valor de uso real superior ao dinheiro investido.</p>
+                </div>
             </div>
-            <div class="checklist-item" data-idx="1">
-                <div class="checklist-checkbox"><i class='bx bx-check'></i></div>
-                <span class="checklist-text">Fazer aporte positivo na Reserva de Emergência</span>
+
+            <!-- Item 3: Aporte -->
+            <div class="reminder-card reminder-blue">
+                <div class="reminder-icon icon-blue">
+                    <i class='bx bx-trending-up'></i>
+                </div>
+                <div class="reminder-content">
+                    <span class="reminder-tag">Aporte</span>
+                    <p class="reminder-text">O segredo para aumentar o patrimônio é ter uma renda extra para aportar mais.</p>
+                </div>
             </div>
-            <div class="checklist-item" data-idx="2">
-                <div class="checklist-checkbox"><i class='bx bx-check'></i></div>
-                <span class="checklist-text">Movimentar o dinheiro restante para a corretora</span>
-            </div>
-            <div class="checklist-item" data-idx="3">
-                <div class="checklist-checkbox"><i class='bx bx-check'></i></div>
-                <span class="checklist-text">Pagar o seguro</span>
-            </div>
-            <div class="checklist-item" data-idx="4">
-                <div class="checklist-checkbox"><i class='bx bx-check'></i></div>
-                <span class="checklist-text">Pagar mensalidade da faculdade</span>
-            </div>
-            <div class="checklist-item" data-idx="5">
-                <div class="checklist-checkbox"><i class='bx bx-check'></i></div>
-                <span class="checklist-text">Pagar a conta de luz</span>
-            </div>
-            <div class="checklist-item" data-idx="6">
-                <div class="checklist-checkbox"><i class='bx bx-check'></i></div>
-                <span class="checklist-text">Pagar o aluguel</span>
-            </div>
-            <div class="checklist-item" data-idx="7">
-                <div class="checklist-checkbox"><i class='bx bx-check'></i></div>
-                <span class="checklist-text">Fazer o Pix da mãe</span>
-            </div>
-            <div class="checklist-item" data-idx="8">
-                <div class="checklist-checkbox"><i class='bx bx-check'></i></div>
-                <span class="checklist-text">Fazer o Pix do Breno</span>
-            </div>
-            <div class="checklist-item" data-idx="9">
-                <div class="checklist-checkbox"><i class='bx bx-check'></i></div>
-                <span class="checklist-text">Pegar o relatório de transações da B3</span>
+
+            <!-- Item 4: Dica de Ouro -->
+            <div class="reminder-card reminder-yellow">
+                <div class="reminder-icon icon-yellow">
+                    <i class='bx bx-star'></i>
+                </div>
+                <div class="reminder-content">
+                    <span class="reminder-tag">Dica de Ouro</span>
+                    <p class="reminder-text">O segredo é a consistência de todo mês aportar, estudar mais antes de investir e a diversificação.</p>
+                </div>
             </div>
         </div>
     </div>
@@ -209,13 +216,15 @@
                 <div class="arca-bar-wrapper">
                     <div class="arca-bar-target-marker" title="Meta de 25%"></div>
                     <!-- Se a porcentagem passar de 100%, limita a 100% de largura visual -->
-                    <div class="arca-bar-fill" style="width: {% if c.percentage > 100 %}100{% else %}{{ c.percentage }}{% endif %}%; background: {% if c.percentage < 25 %}rgba(245, 158, 11, 0.8){% else %}rgba(16, 185, 129, 0.8){% endif %};"></div>
+                    <div class="arca-bar-fill" style="width: {% if c.percentage > 100 %}100{% else %}{{ c.percentage }}{% endif %}%; background: {{ c.status_color }};"></div>
                 </div>
 
                 <div class="arca-footer-row">
                     <span style="color: var(--text-secondary);">Meta teórica (25%): R${{ c.target_value|floatformat:2|intcomma }}</span>
-                    {% if c.difference < 0 %}
+                    {% if c.status_class == 'status-below' %}
                         <span class="arca-rebalance-pill pill-buy">Aportar: R${{ c.abs_difference|floatformat:2|intcomma }}</span>
+                    {% elif c.status_class == 'status-above' %}
+                        <span class="arca-rebalance-pill pill-above">Sobrealocado: +R${{ c.abs_difference|floatformat:2|intcomma }}</span>
                     {% else %}
                         <span class="arca-rebalance-pill pill-balanced">Em equilíbrio</span>
                     {% endif %}
@@ -229,15 +238,61 @@
         </div>
     </div>
 
-    <!-- Bloco 4: Anotações Importantes -->
+    <!-- Bloco 2: Passo a Passo do Salário -->
     <div class="panel panel-right" style="display: flex; flex-direction: column;">
-        <div class="panel-header">
-            <h3 class="panel-title">Anotações Importantes</h3>
-            <span id="save-indicator" style="font-size: 11px; color: var(--text-secondary); transition: color 0.3s;">
-                <i class='bx bx-check-circle'></i> Salvo no navegador
-            </span>
+        <div class="panel-header" style="margin-bottom: 10px;">
+            <h3 class="panel-title">Passo a Passo do Salário</h3>
+            <span id="checklist-counter" style="font-size: 12px; font-weight: 600; color: var(--accent-primary);">0/10 concluídos</span>
         </div>
-        <textarea id="scratchpad" class="scratchpad-textarea" placeholder="Digite suas notas financeiras, estratégias, ideias de investimentos ou lembretes diários aqui..."></textarea>
+        
+        <div class="checklist-progress-bar">
+            <div class="checklist-progress-fill" id="checklist-progress"></div>
+        </div>
+
+        <div class="checklist-container" id="checklist-container">
+            <!-- Checklist Items -->
+            <div class="checklist-item" data-idx="0">
+                <div class="checklist-checkbox"><i class='bx bx-check'></i></div>
+                <span class="checklist-text">[DIA 30] Pagar a fatura do cartão.</span>
+            </div>
+            <div class="checklist-item" data-idx="1">
+                <div class="checklist-checkbox"><i class='bx bx-check'></i></div>
+                <span class="checklist-text">[DIA 30] Aporte na Reserva de Emergência.</span>
+            </div>
+            <div class="checklist-item" data-idx="2">
+                <div class="checklist-checkbox"><i class='bx bx-check'></i></div>
+                <span class="checklist-text">[DIA 1] Receber Salário.</span>
+            </div>
+            <div class="checklist-item" data-idx="3">
+                <div class="checklist-checkbox"><i class='bx bx-check'></i></div>
+                <span class="checklist-text">[DIA 1] Pegar o relatório de transações da B3.</span>
+            </div>
+            <div class="checklist-item" data-idx="4">
+                <div class="checklist-checkbox"><i class='bx bx-check'></i></div>
+                <span class="checklist-text">[DIA 1] Aportar na corretora.</span>
+            </div>
+            <div class="checklist-item" data-idx="5">
+                <div class="checklist-checkbox"><i class='bx bx-check'></i></div>
+                <span class="checklist-text">[DIA 1] Pix da mãe e Breno.</span>
+            </div>
+            <div class="checklist-item" data-idx="6">
+                <div class="checklist-checkbox"><i class='bx bx-check'></i></div>
+                <span class="checklist-text">[DIA 7] Pagar o aluguel.</span>
+            </div>
+            <div class="checklist-item" data-idx="7">
+                <div class="checklist-checkbox"><i class='bx bx-check'></i></div>
+                <span class="checklist-text">[DIA 10] Pagar o seguro.</span>
+            </div>
+            <div class="checklist-item" data-idx="8">
+                <div class="checklist-checkbox"><i class='bx bx-check'></i></div>
+                <span class="checklist-text">[DIA 10] Pagar faculdade.</span>
+            </div>
+            <div class="checklist-item" data-idx="9">
+                <div class="checklist-checkbox"><i class='bx bx-check'></i></div>
+                <span class="checklist-text">[DIA 10] Pagar conta de luz.</span>
+            </div>
+                    
+        </div>
     </div>
 </div>
 {% endblock %}

@@ -11,7 +11,7 @@ from django.db.models.functions import TruncMonth, TruncYear
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 
-from .models import Asset, Dividend, Transaction
+from .models import Asset, Dividend, Transaction, Category
 
 # Adiciona o diretório de scripts ao path para importar o motor de importação B3
 # O import de import_b3 é feito dentro da view pois é um módulo local (não instalado)
@@ -294,3 +294,127 @@ def import_report(request):
             return redirect('investments:import_report')
 
     return render(request, 'investments/import.html')
+
+
+def manual_investments(request):
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'add_transaction':
+            asset_choice = request.POST.get('asset_choice')
+            
+            if asset_choice == 'new':
+                ticker = request.POST.get('new_ticker', '').strip().upper()
+                name = request.POST.get('new_name', '').strip()
+                asset_type = request.POST.get('new_asset_type')
+                category_id = request.POST.get('new_category')
+                
+                if not name or not asset_type or not category_id:
+                    messages.error(request, 'Nome, Tipo de Ativo e Categoria são obrigatórios para novos ativos.')
+                    return redirect('investments:manual_investments')
+                
+                try:
+                    category = Category.objects.get(id=category_id)
+                    # Se tiver ticker e já existir, usa o existente, senão cria
+                    if ticker and Asset.objects.filter(ticker=ticker).exists():
+                        asset = Asset.objects.get(ticker=ticker)
+                    else:
+                        asset = Asset.objects.create(
+                            ticker=ticker,
+                            name=name,
+                            asset_type=asset_type,
+                            category=category
+                        )
+                except Category.DoesNotExist:
+                    messages.error(request, 'Categoria inválida.')
+                    return redirect('investments:manual_investments')
+            else:
+                asset_id = request.POST.get('asset_id')
+                if not asset_id:
+                    messages.error(request, 'Selecione um ativo válido.')
+                    return redirect('investments:manual_investments')
+                try:
+                    asset = Asset.objects.get(id=asset_id)
+                except Asset.DoesNotExist:
+                    messages.error(request, 'Ativo não encontrado.')
+                    return redirect('investments:manual_investments')
+            
+            # Registrar transação
+            transaction_type = request.POST.get('transaction_type')
+            qty_str = request.POST.get('quantity')
+            price_str = request.POST.get('price')
+            tx_date_str = request.POST.get('date')
+            broker = request.POST.get('broker', 'Manual')
+            notes = request.POST.get('notes', '')
+            
+            if not qty_str or not price_str or not tx_date_str:
+                messages.error(request, 'Quantidade, Preço Unitário e Data são obrigatórios.')
+                return redirect('investments:manual_investments')
+                
+            try:
+                quantity = Decimal(qty_str.replace(',', '.'))
+                price = Decimal(price_str.replace(',', '.'))
+                tx_date = date.fromisoformat(tx_date_str)
+                
+                Transaction.objects.create(
+                    asset=asset,
+                    transaction_type=transaction_type,
+                    quantity=quantity,
+                    price=price,
+                    date=tx_date,
+                    broker=broker,
+                    notes=notes,
+                    source=Transaction.Source.MANUAL
+                )
+                messages.success(request, 'Operação manual registrada com sucesso!')
+            except Exception as e:
+                messages.error(request, f'Erro ao registrar transação: {e}')
+                
+            return redirect('investments:manual_investments')
+
+    assets = Asset.objects.filter(is_active=True).order_by('asset_type', 'ticker', 'name')
+    categories = Category.objects.all()
+    manual_transactions = Transaction.objects.filter(
+        source=Transaction.Source.MANUAL
+    ).select_related('asset').order_by('-date', '-id')
+    
+    context = {
+        'assets': assets,
+        'categories': categories,
+        'manual_transactions': manual_transactions,
+        'asset_types': Asset.AssetType.choices,
+        'today': date.today(),
+    }
+    return render(request, 'investments/manual_investments.html', context)
+
+
+def delete_transaction(request, tx_id):
+    if request.method == 'POST':
+        try:
+            tx = Transaction.objects.get(id=tx_id, source=Transaction.Source.MANUAL)
+            tx.delete()
+            messages.success(request, 'Operação excluída com sucesso!')
+        except Transaction.DoesNotExist:
+            messages.error(request, 'Operação não encontrada ou não é manual.')
+        except Exception as e:
+            messages.error(request, f'Erro ao excluir operação: {e}')
+    return redirect('investments:manual_investments')
+
+
+def update_asset_price(request, asset_id):
+    if request.method == 'POST':
+        try:
+            asset = Asset.objects.get(id=asset_id)
+            price_str = request.POST.get('current_price')
+            if price_str:
+                price = Decimal(price_str.replace(',', '.'))
+                asset.current_price = price
+                asset.save()
+                messages.success(request, f'Preço de {asset.ticker or asset.name} atualizado para R$ {price}')
+            else:
+                messages.error(request, 'Preço inválido.')
+        except Asset.DoesNotExist:
+            messages.error(request, 'Ativo não encontrado.')
+        except Exception as e:
+            messages.error(request, f'Erro ao atualizar preço: {e}')
+    return redirect('investments:manual_investments')
