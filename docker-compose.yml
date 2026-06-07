@@ -1,0 +1,11 @@
+services:
+  web:
+    build: .
+    container_name: kallia-financa
+    restart: always
+    ports:
+      - "7777:7777"
+    volumes:
+      - .:/app
+    environment:
+      - PYTHONUNBUFFERED=1
