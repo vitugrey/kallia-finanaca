@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-602d$xf0a(3im%1ye$*54-qwk5+)3b+&-9m&s182xl!ck16@r8
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -76,10 +76,13 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+DB_DIR = BASE_DIR.parent / 'Databases'
+DB_DIR.mkdir(parents=True, exist_ok=True)
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': DB_DIR / 'kallia_financa.sqlite3',
     }
 }
 
