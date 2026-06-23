@@ -7,6 +7,6 @@ services:
       - "7777:7777"
     volumes:
       - .:/app
-      - ../Databases:/Databases
+      - ../databases:/databases
     environment:
       - PYTHONUNBUFFERED=1

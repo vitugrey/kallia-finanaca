@@ -76,13 +76,13 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DB_DIR = BASE_DIR.parent / 'Databases'
+DB_DIR = BASE_DIR.parent / 'databases'
 DB_DIR.mkdir(parents=True, exist_ok=True)
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': DB_DIR / 'kallia_financa.sqlite3',
+        'NAME': DB_DIR / 'kallia-financa.db',
     }
 }
 
@@ -119,7 +119,7 @@ USE_L10N = False
 USE_THOUSAND_SEPARATOR = True
 THOUSAND_SEPARATOR = '.'
 DECIMAL_SEPARATOR = ','
-# Wait, user said "comma in place of dot". 
+# Wait, user said "comma in place of dot".
 # In BR, it is 1.000,00 (dot thousand, comma decimal).
 # If they say "comma in place of dot is an error", they want 1,000.00 (comma thousand, dot decimal).
 # Let's use dot for decimal and comma for thousands.
